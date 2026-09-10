@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# PyInstaller-Ausgaben (werden aus SpotiFlix.spec neu gebaut)
+build/
+dist/
+
+# Lokale Werkzeug-Einstellungen
+.claude/settings.local.json
+
+# Laufzeitdaten liegen im Benutzerprofil (~/.spotiflix-*), nicht im Projekt
+*.log
