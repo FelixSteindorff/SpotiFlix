@@ -1,3 +1,11 @@
+# SpotiFlix – ein barrierefreier Spotify-Player für Windows.
+# Copyright (C) 2026 Felix Steindorff
+#
+# Dieses Programm ist freie Software: Sie können es unter den Bedingungen
+# der GNU General Public License, Version 3 oder (nach Ihrer Wahl) einer
+# neueren Version, weitergeben und/oder verändern. Es wird ohne jede
+# Gewährleistung bereitgestellt; siehe LICENSE für den vollen Text.
+
 """
 Hauptfenster des Spotify Players
 """
@@ -946,7 +954,10 @@ class MainWindow(wx.Frame):
         about.Name = APP_NAME
         about.Version = VERSION
         about.Description = (
-            _("Ein barrierefreier wxPython-Player für Spotify\nSprachausgabe: {output_name}").format(output_name=nvda.output_name())
+            _("Ein barrierefreier wxPython-Player für Spotify\nSprachausgabe: {output_name}").format(
+                output_name=nvda.output_name())
+            + _("\nLizenz: GNU GPL Version 3 oder neuer (siehe LICENSE)")
         )
+        about.Copyright = "(C) 2026 Felix Steindorff"
         about.WebSite = ("https://github.com/opencode", APP_NAME)
         wx.AboutBox(about)

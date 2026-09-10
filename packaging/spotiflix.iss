@@ -38,6 +38,8 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayName={#MyAppName} {#MyAppVersion}
 UninstallDisplayIcon={app}\{#MyAppExe}
+; Die Lizenz wird im Assistenten angezeigt und mitinstalliert.
+LicenseFile=..\LICENSE
 
 [Languages]
 Name: "deutsch"; MessagesFile: "compiler:Languages\German.isl"
@@ -50,6 +52,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ; Der komplette One-Dir-Build aus PyInstaller, inklusive librespot.exe,
 ; der NVDA-Controller-DLLs und der Übersetzungskataloge.
 Source: "..\dist\{#MyAppName}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
+Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\THIRD_PARTY_NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExe}"

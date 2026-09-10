@@ -10,6 +10,9 @@ a = Analysis(
     # falls NVDA sie nicht über den PATH bereitstellt.
     datas=[
         ('librespot.exe', '.'),
+        # Lizenz und Drittanbieter-Hinweise müssen mit ausgeliefert werden.
+        ('LICENSE', '.'),
+        ('THIRD_PARTY_NOTICES.md', '.'),
         # Übersetzungskataloge: i18n.locale_dir() sucht sie im Bundle-Ordner.
         ('locale', 'locale'),
         ('nvdaControllerClient32.dll', '.'),

@@ -8,6 +8,8 @@ The Windows build includes the playback engine, so there is nothing else to inst
 
 > SpotiFlix is an independent third-party client. It is not affiliated with, endorsed by or supported by Spotify.
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+
 ## Features
 
 - Library browsing: playlists, followed artists, saved albums and saved tracks
@@ -368,4 +370,16 @@ Accessibility reports are especially useful. If possible, mention your screen re
 
 ## License
 
-No license has been declared for this project yet, so default copyright applies.
+SpotiFlix is released under the **GNU General Public License, version 3 or
+later**. See [LICENSE](LICENSE) for the full text.
+
+That choice follows from what the packages bundle rather than from taste:
+**mutagen** is GPL-2.0-or-later, which makes the whole package a GPL work, while
+**requests** and **librespot-python** are Apache-2.0, which is incompatible with
+GPL-2 but compatible with GPL-3. GPL-2-only would break against the Apache
+parts, and a permissive license such as MIT would break against mutagen — so
+GPL-3.0-or-later is the one combination that fits.
+
+Every bundled component and its license is listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Both files are shipped inside
+the portable archive and the installer.
