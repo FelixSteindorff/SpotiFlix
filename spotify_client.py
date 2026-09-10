@@ -235,7 +235,11 @@ class SpotifyClient:
             pass
         return None
 
-    def _local_device_id(self, wait_seconds: float = 12.0) -> str:
+    # librespot braucht nach dem Start rund 13 Sekunden, bis es sich beim
+    # Access Point angemeldet und als Connect-Gerät registriert hat. Das
+    # Wartefenster muss deutlich darüber liegen, sonst gilt der Player als
+    # "nicht gefunden", obwohl er gleich darauf erscheint.
+    def _local_device_id(self, wait_seconds: float = 35.0) -> str:
         """Startet/ermittelt ausschließlich das lokale SpotiFlix-Gerät."""
         sp = self.get()
         if not sp:
@@ -256,6 +260,10 @@ class SpotifyClient:
 
         deadline = time.time() + wait_seconds
         last_devices = []
+        # Wachsender Abstand zwischen den Abfragen: schnell, solange der Player
+        # gleich auftauchen kann, danach sparsam – sonst läuft man beim Warten
+        # in Spotifys Anfragegrenze (HTTP 429).
+        delay = 1.0
         while time.time() < deadline:
             devices = sp.devices().get("devices", [])
             last_devices = devices
@@ -263,11 +271,17 @@ class SpotifyClient:
                 if device.get("name") == DEVICE_NAME:
                     self._local_device_cache = (device["id"], time.time())
                     return device["id"]
-            time.sleep(0.75)
+            time.sleep(delay)
+            delay = min(delay * 1.5, 4.0)
 
         device_names = ", ".join(device.get("name", "?") for device in last_devices) or "keine"
-        log = librespot.last_log()
         detail = f"\n\nGefundene Spotify-Geräte: {device_names}"
+        if librespot.login_problem():
+            detail += (
+                "\n\nSpotify hat die Anmeldung des Geräts abgelehnt. Melden Sie den "
+                "lokalen Player über 'Extras > Lokalen Player neu anmelden' erneut an."
+            )
+        log = librespot.last_log()
         if log:
             detail += f"\n\nlibrespot-Log:\n{log}"
         raise RuntimeError(

@@ -211,6 +211,10 @@ class MainWindow(wx.Frame):
             wx.ID_ANY, "Lokalen Player stoppen", "Stoppt den librespot-Player"
         )
         self._item_stop_player.Enable(False)
+        self._item_relogin = extras_menu.Append(
+            wx.ID_ANY, "Lokalen Player neu anmelden",
+            "Verwirft die librespot-Anmeldung und meldet sich neu an (Browser)",
+        )
         self._item_device = extras_menu.Append(
             wx.ID_ANY, "Wiedergabegerät …\tCtrl+Shift+D", "Wählt das Spotify-Connect-Gerät für die Wiedergabe"
         )
@@ -236,6 +240,7 @@ class MainWindow(wx.Frame):
         menubar.Append(extras_menu, "Extras")
         self.Bind(wx.EVT_MENU, self._on_start_player, self._item_start_player)
         self.Bind(wx.EVT_MENU, self._on_stop_player, self._item_stop_player)
+        self.Bind(wx.EVT_MENU, self._on_relogin_player, self._item_relogin)
         self.Bind(wx.EVT_MENU, self._on_choose_device, self._item_device)
         self.Bind(wx.EVT_MENU, self._on_show_downloads, self._item_downloads)
         self.Bind(wx.EVT_MENU, self._on_open_download_folder, self._item_open_folder)
@@ -313,7 +318,13 @@ class MainWindow(wx.Frame):
         for offset, (name, key) in enumerate(MEDIA_KEYS.items()):
             hotkey_id = _HOTKEY_ID_BASE + offset
             try:
-                if self.RegisterHotKey(hotkey_id, 0, key):
+                # Ist die Taste schon von einer anderen Anwendung belegt,
+                # protokolliert wxWidgets das – im Fenster-Build als Dialog
+                # mitten im Start. Das Ergebnis prüfen wir selbst, die Meldung
+                # bleibt darum aus.
+                with wx.LogNull():
+                    registered = self.RegisterHotKey(hotkey_id, 0, key)
+                if registered:
                     self.Bind(wx.EVT_HOTKEY, actions[name], id=hotkey_id)
                     self._hotkey_ids.append(hotkey_id)
             except Exception:
@@ -513,11 +524,47 @@ class MainWindow(wx.Frame):
                 call_after(self.SetStatusText, "Lokaler Player läuft – bereit zur Wiedergabe")
                 call_after(self.mark_local_player_running)
             except Exception as e:
-                call_after(self.SetStatusText, "Fehler beim Starten des Players")
+                applog.error("Lokaler Player", e)
+                call_after(self.announce, f"Player-Fehler: {applog.short_error(e)}")
                 call_after(self._item_start_player.Enable, True)
                 call_after(wx.MessageBox, str(e), "Player-Fehler", wx.ICON_ERROR)
 
         threading.Thread(target=do_start, daemon=True).start()
+
+    def _on_relogin_player(self, event):
+        """Verwirft die librespot-Anmeldung und meldet den Player neu an.
+
+        Nötig, wenn Spotify die Geräteanmeldung ablehnt – die Anmeldung läuft
+        einmalig über den Browser und gilt danach auch für Downloads.
+        """
+        if wx.MessageBox(
+            "Die librespot-Anmeldung wird verworfen. Die neue Anmeldung öffnet "
+            "sich im Browser und gilt für lokale Wiedergabe und Downloads.\n\n"
+            "Fortfahren?",
+            "Lokalen Player neu anmelden",
+            wx.YES_NO | wx.ICON_QUESTION,
+        ) != wx.YES:
+            self.announce("Neuanmeldung abgebrochen")
+            return
+
+        from librespot_manager import librespot
+
+        librespot.reset_login()
+        client.clear_local_device_cache()
+        self.mark_local_player_stopped()
+        self.announce("Anmeldung verworfen – Player wird neu angemeldet …")
+
+        def worker():
+            try:
+                client.activate_local_player()
+                call_after(self.mark_local_player_running)
+                call_after(self.announce, "Lokaler Player neu angemeldet und bereit")
+            except Exception as e:
+                applog.error("Player-Anmeldung", e)
+                call_after(self.announce, f"Neuanmeldung fehlgeschlagen: {applog.short_error(e)}")
+                call_after(wx.MessageBox, str(e), "Player-Fehler", wx.ICON_ERROR)
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def _on_stop_player(self, event):
         """Stoppt den librespot-Player."""

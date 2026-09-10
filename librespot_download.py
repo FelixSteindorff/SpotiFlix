@@ -105,6 +105,17 @@ def _get_session():
         return _session
 
 
+def ensure_login():
+    """Stellt sicher, dass eine librespot-Anmeldung vorliegt.
+
+    Beim ersten Aufruf öffnet librespot den Browser; danach liegt die
+    Anmeldung in ``CREDENTIALS_FILE`` und wird wiederverwendet. Diese
+    Anmeldung nutzen sowohl die Downloads als auch der lokale Player.
+    """
+    _get_session()
+    return os.path.isfile(CREDENTIALS_FILE)
+
+
 def _audio_quality():
     from librespot.audio.decoders import AudioQuality
 
