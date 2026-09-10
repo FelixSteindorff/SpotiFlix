@@ -53,6 +53,21 @@ class ConfigurationDialog(wx.Dialog):
         sizer.Add(playback_quality_label, 0, wx.TOP, 5)
         sizer.Add(self.playback_quality_combo, 1, wx.ALL | wx.EXPAND, 10)
 
+        self.volume_normalisation = wx.CheckBox(panel, label="Lautstärke normalisieren")
+        self.volume_normalisation.SetValue(cfg.get_volume_normalisation())
+        self.volume_normalisation.SetToolTip(
+            "Gleicht Lautstärkeunterschiede zwischen Alben aus (librespot). "
+            "Die Änderung greift, sobald der lokale Player neu startet."
+        )
+        sizer.Add(self.volume_normalisation, 0, wx.ALL, 10)
+
+        initial_volume_label = wx.StaticText(panel, label="Startlautstärke (Prozent):")
+        self.initial_volume = wx.SpinCtrl(panel, min=0, max=100, initial=cfg.get_initial_volume())
+        self.initial_volume.SetName("Startlautstärke in Prozent")
+        self.initial_volume.SetToolTip("Lautstärke, mit der der lokale Player startet")
+        sizer.Add(initial_volume_label, 0, wx.TOP, 5)
+        sizer.Add(self.initial_volume, 0, wx.ALL | wx.EXPAND, 10)
+
         autoplay_label = wx.StaticText(panel, label="Autoplay:")
         self.autoplay_combo = wx.ComboBox(
             panel,
@@ -132,6 +147,17 @@ class ConfigurationDialog(wx.Dialog):
         sizer.Add(download_quality_label, 0, wx.TOP, 5)
         sizer.Add(self.download_quality_combo, 1, wx.ALL | wx.EXPAND, 10)
 
+        parallel_label = wx.StaticText(panel, label="Gleichzeitige Downloads:")
+        self.download_parallel = wx.SpinCtrl(
+            panel, min=1, max=cfg.MAX_DOWNLOAD_PARALLEL, initial=cfg.get_download_parallel()
+        )
+        self.download_parallel.SetName("Gleichzeitige Downloads")
+        self.download_parallel.SetToolTip(
+            "Wie viele Downloads gleichzeitig laufen; der Rest wartet in der Warteschlange."
+        )
+        sizer.Add(parallel_label, 0, wx.TOP, 5)
+        sizer.Add(self.download_parallel, 0, wx.ALL | wx.EXPAND, 10)
+
         download_label = wx.StaticText(panel, label="Download-Ordner:")
         self.download_dir_input = wx.DirPickerCtrl(
             panel,
@@ -209,6 +235,15 @@ class ConfigurationDialog(wx.Dialog):
     def get_verbosity(self) -> str:
         return self._verbosity_values[self.verbosity_combo.GetSelection()]
 
+    def get_volume_normalisation(self) -> bool:
+        return bool(self.volume_normalisation.GetValue())
+
+    def get_initial_volume(self) -> int:
+        return int(self.initial_volume.GetValue())
+
+    def get_download_parallel(self) -> int:
+        return int(self.download_parallel.GetValue())
+
     def get_download_template(self) -> str:
         return self.download_template_input.GetValue().strip()
 
@@ -228,5 +263,8 @@ class ConfigurationDialog(wx.Dialog):
                 self.get_download_format(),
                 self.get_autoplay(),
                 self.get_verbosity(),
+                self.get_volume_normalisation(),
+                self.get_initial_volume(),
+                self.get_download_parallel(),
             )
         )

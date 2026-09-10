@@ -23,16 +23,25 @@ def _menu_shortcuts(frame) -> list[dict]:
     if not menubar:
         return rows
     for index in range(menubar.GetMenuCount()):
-        area = menubar.GetMenuLabelText(index)
-        for item in menubar.GetMenu(index).GetMenuItems():
-            if item.IsSeparator():
-                continue
-            label = item.GetItemLabel()
-            text, _tab, accelerator = label.partition("\t")
-            text = text.replace("&", "").strip()
-            if not text:
-                continue
-            rows.append({"area": area, "key": accelerator.strip() or "–", "name": text})
+        rows += _menu_items(menubar.GetMenu(index), menubar.GetMenuLabelText(index))
+    return rows
+
+
+def _menu_items(menu, area: str) -> list[dict]:
+    """Läuft ein Menü samt seiner Untermenüs ab (z. B. die Schnellzugriffe)."""
+    rows = []
+    for item in menu.GetMenuItems():
+        if item.IsSeparator():
+            continue
+        if item.IsSubMenu():
+            rows += _menu_items(item.GetSubMenu(), area)
+            continue
+        label = item.GetItemLabel()
+        text, _tab, accelerator = label.partition("\t")
+        text = text.replace("&", "").strip()
+        if not text:
+            continue
+        rows.append({"area": area, "key": accelerator.strip() or "–", "name": text})
     return rows
 
 

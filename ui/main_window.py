@@ -17,7 +17,10 @@ from ui.search_panel import SearchPanel
 from ui.queue_panel import QueuePanel
 from ui.discover_panel import DiscoverPanel
 from ui.downloads_dialog import show_downloads
+from ui.list_io import import_playlist
+from ui.log_dialog import show_log
 from ui.panel_helpers import call_after, format_position, mark_shutting_down, open_folder
+from ui.shortcuts import show_shortcuts
 
 APP_NAME = "SpotiFlix"
 
@@ -89,6 +92,9 @@ class MainWindow(wx.Frame):
         # Einschlaf-Timer: Zeitpunkt, an dem pausiert wird (None = aus).
         self._sleep_deadline: float | None = None
         self._hotkey_ids: list[int] = []
+        # Feste IDs für die Schnellzugriffe: Die Kürzel Strg+Umschalt+1…9
+        # bleiben gültig, auch wenn sich die Menüeinträge ändern.
+        self._bookmark_ids = [wx.NewIdRef() for _ in range(cfg.MAX_BOOKMARKS)]
 
         self._create_menu()
 
@@ -145,11 +151,21 @@ class MainWindow(wx.Frame):
         self._menu_search = navigation_menu.Append(wx.ID_ANY, "Suche\tCtrl+2")
         self._menu_queue = navigation_menu.Append(wx.ID_ANY, "Warteschlange\tCtrl+3")
         self._menu_discover = navigation_menu.Append(wx.ID_ANY, "Entdecken\tCtrl+4")
+        navigation_menu.AppendSeparator()
+        self._bookmark_menu = wx.Menu()
+        navigation_menu.AppendSubMenu(self._bookmark_menu, "Schnellzugriffe")
+        self._menu_manage_bookmarks = navigation_menu.Append(
+            wx.ID_ANY, "Schnellzugriffe verwalten …", "Entfernt gespeicherte Schnellzugriffe"
+        )
         menubar.Append(navigation_menu, "Navigation")
         self.Bind(wx.EVT_MENU, lambda event: self._select_tab(0), self._menu_library)
         self.Bind(wx.EVT_MENU, lambda event: self._select_tab(1), self._menu_search)
         self.Bind(wx.EVT_MENU, lambda event: self._select_tab(2), self._menu_queue)
         self.Bind(wx.EVT_MENU, lambda event: self._select_tab(3), self._menu_discover)
+        self.Bind(wx.EVT_MENU, self._on_manage_bookmarks, self._menu_manage_bookmarks)
+        for slot, ref in enumerate(self._bookmark_ids):
+            self.Bind(wx.EVT_MENU, lambda event, index=slot: self._open_bookmark(index), id=ref)
+        self._rebuild_bookmark_menu()
 
         playback_menu = wx.Menu()
         self._menu_play_pause = playback_menu.Append(wx.ID_ANY, "Play/Pause\tCtrl+P")
@@ -205,17 +221,36 @@ class MainWindow(wx.Frame):
         self._item_open_folder = extras_menu.Append(
             wx.ID_ANY, "Download-Ordner öffnen", "Öffnet den konfigurierten Zielordner im Explorer"
         )
+        extras_menu.AppendSeparator()
+        self._item_export = extras_menu.Append(
+            wx.ID_ANY, "Angezeigte Liste exportieren …\tCtrl+E", "Speichert die aktuelle Liste als CSV oder M3U"
+        )
+        self._item_import = extras_menu.Append(
+            wx.ID_ANY, "Playlist aus Datei importieren …\tCtrl+Shift+I",
+            "Legt aus den Spotify-Links einer Datei eine neue Playlist an",
+        )
+        extras_menu.AppendSeparator()
+        self._item_log = extras_menu.Append(
+            wx.ID_ANY, "Protokoll …\tCtrl+Shift+G", "Zeigt gesammelte Fehler und Ereignisse"
+        )
         menubar.Append(extras_menu, "Extras")
         self.Bind(wx.EVT_MENU, self._on_start_player, self._item_start_player)
         self.Bind(wx.EVT_MENU, self._on_stop_player, self._item_stop_player)
         self.Bind(wx.EVT_MENU, self._on_choose_device, self._item_device)
         self.Bind(wx.EVT_MENU, self._on_show_downloads, self._item_downloads)
         self.Bind(wx.EVT_MENU, self._on_open_download_folder, self._item_open_folder)
+        self.Bind(wx.EVT_MENU, self._on_export_view, self._item_export)
+        self.Bind(wx.EVT_MENU, lambda event: import_playlist(self), self._item_import)
+        self.Bind(wx.EVT_MENU, lambda event: show_log(self), self._item_log)
 
         help_menu = wx.Menu()
+        self._item_shortcuts = help_menu.Append(
+            wx.ID_ANY, "Tastenkürzel …\tF1", "Zeigt alle Tastenkürzel dieser App"
+        )
         auth_item = help_menu.Append(wx.ID_ANY, "Autorisieren...", "Autorisiert die App bei Spotify")
         about_item = help_menu.Append(wx.ID_ABOUT, "Über", "Informationen über diese App")
         menubar.Append(help_menu, "Hilfe")
+        self.Bind(wx.EVT_MENU, lambda event: show_shortcuts(self), self._item_shortcuts)
         self.Bind(wx.EVT_MENU, self._on_auth, auth_item)
         self.Bind(wx.EVT_MENU, self._on_about, about_item)
 
@@ -247,6 +282,16 @@ class MainWindow(wx.Frame):
             (wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord("E"), self._menu_sleep.GetId()),
             (wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord("D"), self._item_device.GetId()),
             (wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord("L"), self._item_downloads.GetId()),
+            (wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord("G"), self._item_log.GetId()),
+            (wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord("I"), self._item_import.GetId()),
+            (wx.ACCEL_CTRL, ord("E"), self._item_export.GetId()),
+            (wx.ACCEL_NORMAL, wx.WXK_F1, self._item_shortcuts.GetId()),
+        ]
+        # Strg+Umschalt+1 … 9 springen zu den Schnellzugriffen – unabhängig
+        # davon, ob der Platz gerade belegt ist.
+        entries += [
+            (wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord(str(slot + 1)), ref.GetId())
+            for slot, ref in enumerate(self._bookmark_ids)
         ]
         self.SetAcceleratorTable(wx.AcceleratorTable(entries))
 
@@ -309,6 +354,79 @@ class MainWindow(wx.Frame):
                 "Neue Berechtigungen nötig – bitte 'Hilfe > Autorisieren' erneut ausführen.",
             )
 
+    def _rebuild_bookmark_menu(self):
+        """Baut das Schnellzugriff-Menü aus den gespeicherten Einträgen neu.
+
+        Dadurch stehen die belegten Plätze auch in der Kürzelübersicht (F1).
+        """
+        for item in list(self._bookmark_menu.GetMenuItems()):
+            self._bookmark_menu.Delete(item)
+        bookmarks = cfg.get_bookmarks()
+        if not bookmarks:
+            placeholder = self._bookmark_menu.Append(
+                wx.ID_ANY, "Noch keine gespeichert", "Kontextmenü: „Als Schnellzugriff merken"
+            )
+            placeholder.Enable(False)
+            return
+        kinds = {"album": "Album", "artist": "Künstler", "playlist": "Playlist", "show": "Podcast"}
+        for slot, entry in enumerate(bookmarks):
+            kind = kinds.get(entry.get("type", ""), "Eintrag")
+            self._bookmark_menu.Append(
+                self._bookmark_ids[slot],
+                f"{slot + 1} {entry.get('name', '')} ({kind})\tCtrl+Shift+{slot + 1}",
+            )
+
+    def _open_bookmark(self, index: int):
+        """Öffnet den Schnellzugriff mit der Nummer ``index`` + 1."""
+        bookmarks = cfg.get_bookmarks()
+        if index >= len(bookmarks):
+            self.announce(f"Schnellzugriff {index + 1} ist nicht belegt")
+            return
+        entry = bookmarks[index]
+        item = {"type": entry["type"], "id": entry["id"], "name": entry.get("name", "")}
+        panel = self.library_panel
+        self._select_tab(0)
+        opener = {
+            "album": panel.goto_album,
+            "artist": panel.goto_artist,
+            "playlist": panel.goto_playlist,
+            "show": panel.goto_show,
+        }.get(entry["type"])
+        if not opener:
+            self.announce("Dieser Schnellzugriff lässt sich nicht öffnen")
+            return
+        self.announce(f"Schnellzugriff {index + 1}: {entry.get('name', '')}")
+        opener(item)
+
+    def _on_manage_bookmarks(self, event):
+        """Entfernt ausgewählte Schnellzugriffe."""
+        bookmarks = cfg.get_bookmarks()
+        if not bookmarks:
+            self.announce("Es sind keine Schnellzugriffe gespeichert")
+            return
+        labels = [f"{slot + 1} {entry.get('name', '')}" for slot, entry in enumerate(bookmarks)]
+        dialog = wx.MultiChoiceDialog(
+            self, "Schnellzugriffe zum Entfernen auswählen:", "Schnellzugriffe", labels
+        )
+        if dialog.ShowModal() == wx.ID_OK:
+            remove = set(dialog.GetSelections())
+            kept = [entry for slot, entry in enumerate(bookmarks) if slot not in remove]
+            if remove:
+                cfg.save_bookmarks(kept)
+                self._rebuild_bookmark_menu()
+                self._create_accelerators()
+                self.announce(f"{len(remove)} Schnellzugriff(e) entfernt")
+        dialog.Destroy()
+
+    def _on_export_view(self, event):
+        """Exportiert die Liste des aktiven Tabs."""
+        page = self.notebook.GetCurrentPage()
+        export = getattr(page, "_export_view", None)
+        if export:
+            export()
+        else:
+            self.announce("Diese Ansicht lässt sich nicht exportieren")
+
     def _select_tab(self, index: int):
         self.notebook.SetSelection(index)
         page = self.notebook.GetPage(index)
@@ -319,7 +437,13 @@ class MainWindow(wx.Frame):
 
     def _on_configure(self, event):
         """Öffnet den Konfigurationsdialog; greift nicht auf interne Widgets zu."""
-        old_playback_quality = cfg.get_playback_quality()
+        # Diese Werte gibt librespot nur beim Start mit – ändern sie sich,
+        # muss der lokale Player neu starten.
+        old_player_settings = (
+            cfg.get_playback_quality(),
+            cfg.get_volume_normalisation(),
+            cfg.get_initial_volume(),
+        )
         old_client_id = cfg.get_client_id()
         old_client_secret = cfg.get_client_secret()
         dialog = ConfigurationDialog(self)
@@ -328,12 +452,20 @@ class MainWindow(wx.Frame):
                 if (cfg.get_client_id(), cfg.get_client_secret()) != (old_client_id, old_client_secret):
                     # Sonst arbeitet der gecachte SpotifyOAuth mit den alten Credentials weiter
                     client.reset_auth()
-                if cfg.get_playback_quality() != old_playback_quality:
+                new_player_settings = (
+                    cfg.get_playback_quality(),
+                    cfg.get_volume_normalisation(),
+                    cfg.get_initial_volume(),
+                )
+                if new_player_settings != old_player_settings:
                     from librespot_manager import librespot
                     librespot.stop()
                     client.clear_local_device_cache()
                     self.mark_local_player_stopped()
-                    self.SetStatusText("Einstellungen gespeichert. Lokaler Player wurde für neue Qualität gestoppt.")
+                    self.SetStatusText(
+                        "Einstellungen gespeichert. Lokaler Player wurde für die neuen "
+                        "Wiedergabeeinstellungen gestoppt."
+                    )
                 else:
                     self.SetStatusText("Einstellungen gespeichert")
                 wx.MessageBox("Einstellungen gespeichert!", "Erfolg", wx.ICON_INFORMATION)
@@ -678,40 +810,48 @@ class MainWindow(wx.Frame):
 
         threading.Thread(target=worker, daemon=True).start()
 
+    def refresh_bookmarks(self):
+        """Wird aufgerufen, wenn sich die Schnellzugriffe geändert haben."""
+        self._rebuild_bookmark_menu()
+        self._create_accelerators()
+
     def enqueue(self, rows: list[dict]):
         """Trägt Titel in den Warteschlangen-Tab ein (für die Bearbeitung)."""
         self.queue_panel.add_items(rows)
 
-    def _selected_item(self):
-        """Liefert das aktuell markierte Element des aktiven Tabs (oder None)."""
+    def _selected_items(self):
+        """Liefert die markierten Elemente des aktiven Tabs (oder eine leere Liste)."""
         page = self.notebook.GetCurrentPage()
-        getter = getattr(page, "get_selected_item", None)
-        item = getter() if getter else None
-        return page, item
+        getter = getattr(page, "get_selected_items", None)
+        if getter:
+            return page, getter()
+        single = getattr(page, "get_selected_item", None)
+        item = single() if single else None
+        return page, [item] if item else []
 
     def _on_add_to_queue(self, event):
-        page, item = self._selected_item()
-        if not item:
+        page, items = self._selected_items()
+        if not items:
             self.announce("Kein Titel ausgewählt")
             return
         from ui.context_actions import add_to_queue
-        add_to_queue(page, item)
+        add_to_queue(page, items)
 
     def _on_add_to_playlist(self, event):
-        page, item = self._selected_item()
-        if not item:
+        page, items = self._selected_items()
+        if not items:
             self.announce("Kein Titel ausgewählt")
             return
         from ui.context_actions import add_to_playlist
-        add_to_playlist(page, item)
+        add_to_playlist(page, items)
 
     def _on_toggle_library(self, event):
-        page, item = self._selected_item()
-        if not item:
+        page, items = self._selected_items()
+        if not items:
             self.announce("Kein Eintrag ausgewählt")
             return
         from ui.context_actions import toggle_library
-        toggle_library(page, item)
+        toggle_library(page, items)
 
     def _on_close(self, event):
         """Stoppt lokale Wiedergabe zuverlässig beim Beenden.
