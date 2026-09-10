@@ -29,6 +29,7 @@ The Windows build includes the playback engine, so there is nothing else to inst
 - Sleep timer
 - Spoken and braille feedback for status, results, volume, queue and library actions
 - Shortcut overview that builds itself from the running application
+- German and English interface
 
 Most item actions are also available from the context menu, which opens at the selected row when you use the keyboard.
 
@@ -44,7 +45,7 @@ Long operations run in a background thread. When one finishes, the focus only mo
 
 If NVDA is not reachable, SpotiFlix falls back to the Windows speech engine (SAPI5). Screen-reader output goes through the [NVDA Controller Client](https://github.com/nvaccess/nvda); an installed NVDA is preferred over the copy shipped with the project.
 
-The interface itself is currently **German only**. If something does not work properly with a screen reader or keyboard-only use, please open an issue and mention what your screen reader announced, or what it did not announce.
+The interface is available in **German and English** and follows the system language by default. If something does not work properly with a screen reader or keyboard-only use, please open an issue and mention what your screen reader announced, or what it did not announce.
 
 ## Requirements
 
@@ -73,8 +74,8 @@ SpotiFlix uses your own Spotify application, so no shared client secret has to b
    http://127.0.0.1:8080/callback
    ```
 
-3. Start SpotiFlix and enter client ID and secret under `Bearbeiten > Einstellungen` (Edit → Settings). They are stored in the Windows Credential Manager, not in a file.
-4. Run `Hilfe > Autorisieren` (Help → Authorize). The browser opens, and SpotiFlix answers the callback with its own local server.
+3. Start SpotiFlix and enter client ID and secret under `Edit > Settings`. They are stored in the Windows Credential Manager, not in a file.
+4. Run `Help > Authorize`. The browser opens, and SpotiFlix answers the callback with its own local server.
 
 SpotiFlix requests 14 scopes. If the set of scopes changes with an update, the stored token is no longer sufficient, and the application says so on startup and asks you to authorize again.
 
@@ -107,7 +108,7 @@ ERROR librespot] could not initialize spirc:
   Invalid state { Login request was denied: INVALID_CREDENTIALS }
 ```
 
-SpotiFlix therefore hands librespot the stored credentials from librespot's own OAuth login. If Spotify rejects them, `Extras > Lokalen Player neu anmelden` (Extras → Sign the local player in again) discards them and starts a fresh login.
+SpotiFlix therefore hands librespot the stored credentials from librespot's own OAuth login. If Spotify rejects them, `Extras > Sign the local player in again` discards them and starts a fresh login.
 
 Registering the device takes a moment: measured between 4 and 16 seconds after the process starts. SpotiFlix waits up to 35 seconds for it and announces the result.
 
@@ -165,7 +166,7 @@ The media keys on a keyboard or headset work while SpotiFlix is in the backgroun
 
 The queue tab has two views:
 
-**My list** collects everything added through `Zur Warteschlange hinzufügen` (`Ctrl+Q`) and is editable: reorder with `Ctrl+Up` / `Ctrl+Down`, remove with `Del`, clear it completely. `Enter` starts playback from the marked track, and Spotify plays the list in exactly that order.
+**My list** collects everything added through `Add to queue` (`Ctrl+Q`) and is editable: reorder with `Ctrl+Up` / `Ctrl+Down`, remove with `Del`, clear it completely. `Enter` starts playback from the marked track, and Spotify plays the list in exactly that order.
 
 **Spotify queue** shows what Spotify itself will play next, including whatever autoplay or another device queued, with the current track first. This view is read-only, because the Web API can neither remove nor reorder entries there. `F5` reloads it, `Enter` plays the selected track.
 
@@ -183,7 +184,7 @@ Open a playlist and you can edit it in place:
 
 Tracks are removed by position, so if the same track appears twice in a playlist, only the marked one disappears. Removing asks first, and the view reloads afterwards. This works in the library, in Discover and in search results alike, and only for playlists you own or that are collaborative.
 
-`Neue Playlist …` in the "add to playlist" dialog (`Ctrl+Shift+P`) creates a new private playlist and selects it right away.
+`New playlist …` in the "add to playlist" dialog (`Ctrl+Shift+P`) creates a new private playlist and selects it right away.
 
 ## Downloads
 
@@ -221,6 +222,33 @@ Available placeholders are `%artist%`, `%artists%`, `%album%`, `%title%`, `%num%
 
 Both logs are rotated instead of growing without limit. `Ctrl+Shift+G` shows the collected errors and events with timestamps and copies them to the clipboard for a bug report; announcements only carry the first line of an error and point to the log for the rest.
 
+## Languages
+
+The interface ships in German and English. **German is the source language**: the
+texts in the code are the msgid keys, and English is a gettext catalog under
+`locale/en/LC_MESSAGES/`. German therefore can never be missing or out of date.
+
+The language follows the system by default and can be set explicitly under
+`Edit > Settings`. A change takes effect after a restart, because labels are
+built when the windows are created.
+
+Windows usually has no GNU gettext, so the project brings its own tool:
+
+```powershell
+py tools/i18n_tool.py extract   # collect texts from the source into locale/spotiflix.pot
+py tools/i18n_tool.py update    # merge new texts into locale/en/LC_MESSAGES/spotiflix.po
+py tools/i18n_tool.py compile   # .po to .mo, which is what the application reads
+py tools/i18n_tool.py check     # report missing translations, broken shortcuts, bad placeholders
+```
+
+`check` is the useful one: it verifies that every menu accelerator behind a tab
+character survived translation and that no placeholder such as `{count}` went
+missing. Run `compile` after changing a catalog — the application reads the
+`.mo`, not the `.po`.
+
+Another language needs a folder `locale/<code>/LC_MESSAGES/`, an entry in
+`i18n.LANGUAGES` and `CATALOG_LANGUAGES` in the tool.
+
 ## Building the Windows version
 
 ```powershell
@@ -230,7 +258,7 @@ py -m PyInstaller --noconfirm --clean SpotiFlix.spec
 
 The result is a one-dir build in `dist\SpotiFlix\`. Pass the whole folder on when sharing it, not just the executable.
 
-Always build from `SpotiFlix.spec`. It produces a windowless build and bundles `librespot.exe` as well as the NVDA controller DLLs, which `nvda.py` and `librespot_manager.py` look for in exactly that place. No SpotiFlix instance may be running, or the executable is locked.
+Always build from `SpotiFlix.spec`. It produces a windowless build and bundles `librespot.exe`, the NVDA controller DLLs and the `locale` folder, which `nvda.py`, `librespot_manager.py` and `i18n.py` look for in exactly that place. Run `py tools/i18n_tool.py compile` before building if you changed a catalog. No SpotiFlix instance may be running, or the executable is locked.
 
 spotdl and ffmpeg are deliberately not bundled; they are external programs and are located through `PATH`.
 
@@ -245,6 +273,7 @@ librespot_download.py   downloads as the native Spotify stream
 download_manager.py     download methods and the queue
 nvda.py                 speech and braille output
 applog.py               log and short error messages
+i18n.py                 translations (German source, English catalog)
 
 ui/
   main_window.py        menu, tabs, playback control, timers
@@ -263,13 +292,18 @@ ui/
   log_dialog.py         log
   config_dialog.py      settings
 
+locale/
+  spotiflix.pot         extracted texts
+  en/LC_MESSAGES/       English catalog (.po and compiled .mo)
+
+tools/i18n_tool.py      extract, merge, compile and check catalogs
 SpotiFlix.spec          Windows build
 ```
 
 ## Known limitations
 
 - **Spotify Premium is required.** The Web API playback endpoints and Spotify Connect do not work with a free account.
-- The interface is German only.
+- Changing the interface language needs a restart.
 - Spotify's own queue can only be read. Removing and reordering only works in the app's own list.
 - Playback starts at most 100 tracks in one go; that is the API limit. The announcement says so instead of silently truncating.
 - Recommendations, related artists, featured playlists and browse categories are not used: Spotify closed those endpoints for applications registered after November 2024. The artist view therefore finds matching playlists through a normal search.

@@ -56,6 +56,8 @@ from ui.panel_helpers import (
 )
 from ui.playlist_edit import edit_details, move_track, playlist_id_for, remove_tracks
 
+from i18n import N_, _
+
 #: Wie viele Treffer je Abschnitt und Ladevorgang geholt werden.
 SEARCH_PAGE_SIZE = 20
 
@@ -63,24 +65,18 @@ SEARCH_PAGE_SIZE = 20
 class SearchPanel(wx.Panel):
     """Suchpanel – API-Calls laufen in Hintergrund-Threads."""
 
-    SEARCH_TYPES = {
-        "Top-Ergebnisse": "track,playlist,album,artist,show,episode",
-        "Titel": "track",
-        "Playlists": "playlist",
-        "Alben": "album",
-        "Künstler": "artist",
-        "Podcasts": "show,episode",
-    }
-
-    # Welche Abschnitte der Suchantwort zu welcher Ergebnisart gehören.
-    SECTION_KEYS = {
-        "Top-Ergebnisse": ["tracks", "playlists", "albums", "artists", "shows", "episodes"],
-        "Titel": ["tracks"],
-        "Playlists": ["playlists"],
-        "Alben": ["albums"],
-        "Künstler": ["artists"],
-        "Podcasts": ["shows", "episodes"],
-    }
+    #: Ergebnisarten: (Schlüssel, Beschriftung, API-Typen, Abschnitte der Antwort).
+    #: Der Schlüssel ist die Logik, die Beschriftung nur Anzeige – sonst würde
+    #: eine Übersetzung die Zuordnung zerreißen.
+    SEARCH_TYPES = [
+        ("top", N_("Top-Ergebnisse"), "track,playlist,album,artist,show,episode",
+         ["tracks", "playlists", "albums", "artists", "shows", "episodes"]),
+        ("tracks", N_("Titel"), "track", ["tracks"]),
+        ("playlists", N_("Playlists"), "playlist", ["playlists"]),
+        ("albums", N_("Alben"), "album", ["albums"]),
+        ("artists", N_("Künstler"), "artist", ["artists"]),
+        ("shows", N_("Podcasts"), "show,episode", ["shows", "episodes"]),
+    ]
 
     # Zeilenbauer je Abschnitt.
     SECTION_BUILDERS = {
@@ -94,30 +90,30 @@ class SearchPanel(wx.Panel):
 
     # Präfix je Elementtyp, damit die Art des Treffers mitgesprochen wird.
     _LABEL_PREFIX = {
-        "track": "Titel: ",
-        "episode": "Episode: ",
-        "album": "Album: ",
-        "artist": "Künstler: ",
-        "playlist": "Playlist: ",
-        "show": "Podcast: ",
+        "track": N_("Titel: "),
+        "episode": N_("Episode: "),
+        "album": N_("Album: "),
+        "artist": N_("Künstler: "),
+        "playlist": N_("Playlist: "),
+        "show": N_("Podcast: "),
     }
 
     #: Elementtypen, für die ein Kontextmenü angeboten wird.
     CONTEXT_TYPES = {"track", "episode", "album", "artist", "playlist", "show"}
     #: Tasten, die dieses Panel selbst behandelt (für die Kürzelübersicht).
     LOCAL_SHORTCUTS = [
-        ("Eingabe", "Treffer öffnen bzw. abspielen"),
-        ("Rücktaste, Alt+Pfeil links, Esc", "Zur vorherigen Ansicht"),
-        ("Strg+F", "Trefferliste filtern"),
-        ("Esc", "Filter aufheben"),
-        ("F5", "Ansicht neu laden"),
-        ("Strg+A", "Alles markieren"),
-        ("Umschalt+Pfeiltasten", "Mehrere Treffer markieren"),
-        ("Pfeil hoch/runter im Suchfeld", "Frühere Suchbegriffe"),
-        ("Entf", "Markierte Titel aus der geöffneten Playlist entfernen"),
-        ("Strg+Pfeil hoch/runter", "Titel in der geöffneten Playlist verschieben"),
-        ("F2", "Playlist umbenennen und Beschreibung bearbeiten"),
-        ("Strg+E", "Angezeigte Liste exportieren"),
+        (N_("Eingabe"), N_("Treffer öffnen bzw. abspielen")),
+        (N_("Rücktaste, Alt+Pfeil links, Esc"), N_("Zur vorherigen Ansicht")),
+        (N_("Strg+F"), N_("Trefferliste filtern")),
+        (N_("Esc"), N_("Filter aufheben")),
+        (N_("F5"), N_("Ansicht neu laden")),
+        (N_("Strg+A"), N_("Alles markieren")),
+        (N_("Umschalt+Pfeiltasten"), N_("Mehrere Treffer markieren")),
+        (N_("Pfeil hoch/runter im Suchfeld"), N_("Frühere Suchbegriffe")),
+        (N_("Entf"), N_("Markierte Titel aus der geöffneten Playlist entfernen")),
+        (N_("Strg+Pfeil hoch/runter"), N_("Titel in der geöffneten Playlist verschieben")),
+        (N_("F2"), N_("Playlist umbenennen und Beschreibung bearbeiten")),
+        (N_("Strg+E"), N_("Angezeigte Liste exportieren")),
     ]
 
     def __init__(self, parent):
@@ -125,66 +121,66 @@ class SearchPanel(wx.Panel):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
 
-        search_label = wx.StaticText(self, label="Suche:")
+        search_label = wx.StaticText(self, label=_("Suche:"))
         # Kombinationsfeld statt Textfeld: Die zuletzt genutzten Suchbegriffe
         # lassen sich mit den Pfeiltasten zurückholen.
         self.search_input = wx.ComboBox(
             self, choices=cfg.get_search_history(), style=wx.TE_PROCESS_ENTER
         )
-        self.search_input.SetName("Suchbegriff")
-        self.search_input.SetToolTip("Suchbegriff eingeben; Pfeiltasten holen frühere Suchen zurück")
+        self.search_input.SetName(_("Suchbegriff"))
+        self.search_input.SetToolTip(_("Suchbegriff eingeben; Pfeiltasten holen frühere Suchen zurück"))
         self.search_input.Bind(wx.EVT_TEXT_ENTER, self._on_search)
         sizer.Add(search_label, 0, wx.TOP, 5)
         sizer.Add(self.search_input, 1, wx.ALL | wx.EXPAND, 10)
 
-        type_label = wx.StaticText(self, label="Suchtyp:")
+        type_label = wx.StaticText(self, label=_("Suchtyp:"))
         self.type_combo = wx.ComboBox(
             self,
-            choices=list(self.SEARCH_TYPES.keys()),
+            choices=[_(label) for _key, label, _types, _sections in self.SEARCH_TYPES],
             style=wx.CB_READONLY,
         )
-        self.type_combo.SetName("Suchtyp")
+        self.type_combo.SetName(_("Suchtyp"))
         self.type_combo.SetSelection(0)
         sizer.Add(type_label, 0, wx.TOP, 5)
         sizer.Add(self.type_combo, 1, wx.ALL | wx.EXPAND, 10)
 
-        sort_label = wx.StaticText(self, label="Sortierung:")
-        self.sort_choice = wx.Choice(self, choices=[label for _key, label in SORT_MODES])
-        self.sort_choice.SetName("Sortierung")
+        sort_label = wx.StaticText(self, label=_("Sortierung:"))
+        self.sort_choice = wx.Choice(self, choices=[_(label) for _key, label in SORT_MODES])
+        self.sort_choice.SetName(_("Sortierung"))
         self.sort_choice.SetSelection(0)
         self.sort_choice.Bind(wx.EVT_CHOICE, self._on_sort_choice)
         sizer.Add(sort_label, 0, wx.TOP, 5)
         sizer.Add(self.sort_choice, 0, wx.ALL | wx.EXPAND, 10)
 
         button_box = wx.BoxSizer(wx.HORIZONTAL)
-        self.btn_search = wx.Button(self, label="Suchen")
+        self.btn_search = wx.Button(self, label=_("Suchen"))
         self.btn_search.Bind(wx.EVT_BUTTON, self._on_search)
-        self.btn_search.SetToolTip("Startet die Suche bei Spotify")
+        self.btn_search.SetToolTip(_("Startet die Suche bei Spotify"))
         button_box.Add(self.btn_search, 1, wx.ALL | wx.EXPAND, 5)
-        self.btn_more = wx.Button(self, label="Mehr laden")
+        self.btn_more = wx.Button(self, label=_("Mehr laden"))
         self.btn_more.Enable(False)
         self.btn_more.Bind(wx.EVT_BUTTON, lambda event: self._load_more())
-        self.btn_more.SetToolTip("Holt die nächsten Treffer zur laufenden Suche")
+        self.btn_more.SetToolTip(_("Holt die nächsten Treffer zur laufenden Suche"))
         button_box.Add(self.btn_more, 1, wx.ALL | wx.EXPAND, 5)
         sizer.Add(button_box, 0, wx.ALL | wx.EXPAND, 5)
 
-        result_label = wx.StaticText(self, label="Suchergebnisse:")
+        result_label = wx.StaticText(self, label=_("Suchergebnisse:"))
         self.result_list = wx.ListCtrl(self, style=wx.LC_REPORT)
-        self.result_list.InsertColumn(0, "Name", width=400)
-        self.result_list.InsertColumn(1, "Details", width=300)
+        self.result_list.InsertColumn(0, _("Name"), width=400)
+        self.result_list.InsertColumn(1, _("Details"), width=300)
         # Zugänglicher Name: NVDA meldet sonst nur „Liste". Er wechselt mit der
         # geöffneten Ansicht (Album, Künstler, Podcast …).
-        self.result_list.SetName("Suchergebnisse")
+        self.result_list.SetName(_("Suchergebnisse"))
         self.result_list.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self._on_play)
         self.result_list.Bind(wx.EVT_CONTEXT_MENU, self._on_context_menu)
         self.result_list.Bind(wx.EVT_KEY_DOWN, self._on_key_down)
         sizer.Add(result_label, 0, wx.TOP, 5)
         sizer.Add(self.result_list, 3, wx.ALL | wx.EXPAND, 10)
 
-        self.btn_play = wx.Button(self, label="Abspielen")
+        self.btn_play = wx.Button(self, label=_("Abspielen"))
         self.btn_play.Enable(False)
         self.btn_play.Bind(wx.EVT_BUTTON, self._on_play)
-        self.btn_play.SetToolTip("Spielt den ausgewählten Eintrag direkt ab")
+        self.btn_play.SetToolTip(_("Spielt den ausgewählten Eintrag direkt ab"))
         sizer.Add(self.btn_play, 0, wx.ALL | wx.EXPAND, 10)
 
         self.SetSizer(sizer)
@@ -199,7 +195,7 @@ class SearchPanel(wx.Panel):
         self._current_fetch: tuple | None = None
         # Laufende Suche für „Mehr laden".
         self._query = ""
-        self._display_type = ""
+        self._search_type = self.SEARCH_TYPES[0][0]
         self._offset = 0
         # Navigations-Verlauf, damit „Zum Künstler/Album/Playlist" mit
         # Rücktaste wieder zu den Suchergebnissen zurückführt.
@@ -213,14 +209,14 @@ class SearchPanel(wx.Panel):
     def _on_search(self, event):
         query = self.search_input.GetValue().strip()
         if not query:
-            wx.MessageBox("Geben Sie einen Suchbegriff ein", "Info", wx.ICON_INFORMATION)
+            wx.MessageBox(_("Geben Sie einen Suchbegriff ein"), _("Info"), wx.ICON_INFORMATION)
             return
         sp = client.get()
         if not sp:
-            wx.MessageBox("Zuerst autorisieren!", "Fehler", wx.ICON_ERROR)
+            wx.MessageBox(_("Zuerst autorisieren!"), _("Fehler"), wx.ICON_ERROR)
             return
         self._query = query
-        self._display_type = self.type_combo.GetValue()
+        self._search_type = self.SEARCH_TYPES[max(0, self.type_combo.GetSelection())][0]
         self._offset = 0
         self._run_search(sp, append=False)
 
@@ -235,50 +231,65 @@ class SearchPanel(wx.Panel):
     def _run_search(self, sp, append: bool):
         self.btn_search.Enable(False)
         self.btn_more.Enable(False)
-        message = "Lade weitere Treffer …" if append else f"Suche nach: {self._query}"
+        message = (_("Lade weitere Treffer …") if append
+                   else _("Suche nach: {query}").format(query=self._query))
         announce(self, message, verbose=append)
         wx.BeginBusyCursor()
         origin = focus_origin()
         threading.Thread(
             target=self._search_worker,
-            args=(sp, self._query, self._display_type, self._offset, append, origin),
+            args=(sp, self._query, self._search_type, self._offset, append, origin),
             daemon=True,
         ).start()
 
-    def _search_worker(self, sp, query: str, display_type: str, offset: int, append: bool, origin):
+    def _search_worker(self, sp, query: str, search_type: str, offset: int, append: bool, origin):
         try:
             results = sp.search(
                 q=query,
                 limit=SEARCH_PAGE_SIZE,
                 offset=offset,
-                type=self.SEARCH_TYPES[display_type],
+                type=self._api_types(search_type),
             )
-            rows = self._search_rows(results, display_type)
-            has_more = self._has_more(results, display_type)
+            rows = self._search_rows(results, search_type)
+            has_more = self._has_more(results, search_type)
             call_after(self._show_search_results, rows, query, append, has_more, origin)
         except Exception as e:
             applog.error("Suche", e)
-            call_after(wx.MessageBox, f"Fehler: {e}", "Fehler", wx.ICON_ERROR)
-            call_after(announce, self, f"Suche fehlgeschlagen: {short_error(e)}")
+            call_after(wx.MessageBox, _("Fehler: {value}").format(value=e), _("Fehler"), wx.ICON_ERROR)
+            call_after(announce, self, _("Suche fehlgeschlagen: {short_error}").format(short_error=short_error(e)))
         finally:
             call_after(wx.EndBusyCursor)
             call_after(self.btn_search.Enable, True)
 
-    def _search_rows(self, results: dict, display_type: str) -> list[dict]:
+    def _api_types(self, search_type: str) -> str:
+        """Liefert die API-Typenliste zur gewählten Ergebnisart."""
+        for key, _label, types, _sections in self.SEARCH_TYPES:
+            if key == search_type:
+                return types
+        return self.SEARCH_TYPES[0][2]
+
+    def _sections_for(self, search_type: str) -> list[str]:
+        """Liefert die Abschnitte der Antwort zur gewählten Ergebnisart."""
+        for key, _label, _types, sections in self.SEARCH_TYPES:
+            if key == search_type:
+                return sections
+        return []
+
+    def _search_rows(self, results: dict, search_type: str) -> list[dict]:
         """Wandelt die Suchantwort in einheitliche Zeilen um.
 
         ``section_items`` ist bewusst null-sicher: Spotify liefert einzelne
         Abschnitte gelegentlich als ``null``, statt sie wegzulassen.
         """
         rows: list[dict] = []
-        for key in self.SECTION_KEYS.get(display_type, []):
+        for key in self._sections_for(search_type):
             builder = self.SECTION_BUILDERS[key]
             rows += [builder(item) for item in section_items(results, key) if item]
         return rows
 
-    def _has_more(self, results: dict, display_type: str) -> bool:
+    def _has_more(self, results: dict, search_type: str) -> bool:
         """Prüft, ob Spotify zu mindestens einem Abschnitt weitere Treffer hat."""
-        for key in self.SECTION_KEYS.get(display_type, []):
+        for key in self._sections_for(search_type):
             section = (results or {}).get(key) or {}
             if section.get("next"):
                 return True
@@ -286,12 +297,12 @@ class SearchPanel(wx.Panel):
 
     def _show_search_results(self, rows: list[dict], query: str, append: bool, has_more: bool, origin):
         """Zeigt Suchtreffer an – frisch oder als Anhang von „Mehr laden"."""
-        title = f"Suchergebnisse: {query}"
+        title = _("Suchergebnisse: {query}").format(query=query)
         if append:
             new_rows = self._all_rows + rows
             selected = self.result_list.GetFirstSelected()
             self._set_rows(new_rows, title, select=max(0, selected))
-            announce(self, f"{len(rows)} weitere Treffer, insgesamt {len(new_rows)}")
+            announce(self, _("{count} weitere Treffer, insgesamt {count2}").format(count=len(rows), count2=len(new_rows)))
         else:
             self._nav_stack = []
             self._filter = ""
@@ -318,23 +329,24 @@ class SearchPanel(wx.Panel):
 
     def _on_sort_choice(self, event):
         self.sort_mode, label = SORT_MODES[self.sort_choice.GetSelection()]
+        label = _(label)
         selected = self.result_list.GetFirstSelected()
         self._render(max(0, selected))
-        announce(self, f"Sortierung: {label}")
+        announce(self, _("Sortierung: {label}").format(label=label))
 
     def _render(self, select: int = 0):
         """Zeichnet die (ggf. gefilterten und sortierten) Zeilen neu."""
         self.results_data = sort_rows(filter_rows(self._all_rows, self._filter), self.sort_mode)
         self.result_list.DeleteAllItems()
         for row in self.results_data:
-            prefix = self._LABEL_PREFIX.get(row.get("type"), "")
+            prefix = _(self._LABEL_PREFIX.get(row.get("type"), ""))
             index = self.result_list.InsertItem(
                 self.result_list.GetItemCount(), f"{prefix}{row.get('name', '')}"
             )
             self.result_list.SetItem(index, 1, row.get("details", ""))
         name = self._current_title
         if self._filter:
-            name = f"{name} (Filter: {self._filter})"
+            name = _("{name} (Filter: {filter})").format(name=name, filter=self._filter)
         self.result_list.SetName(name)
         self.btn_play.Enable(bool(self.results_data))
         if self.results_data:
@@ -354,7 +366,7 @@ class SearchPanel(wx.Panel):
 
     def _prompt_filter(self):
         dialog = wx.TextEntryDialog(
-            self, "Trefferliste filtern (leer = alle anzeigen):", "Filter", self._filter
+            self, _("Trefferliste filtern (leer = alle anzeigen):"), _("Filter"), self._filter
         )
         if dialog.ShowModal() == wx.ID_OK:
             self._apply_filter(dialog.GetValue().strip())
@@ -365,7 +377,7 @@ class SearchPanel(wx.Panel):
         self._filter = text
         self._render()
         if text:
-            announce(self, f"Filter „{text}“: {len(self.results_data)} von {len(self._all_rows)} Treffern")
+            announce(self, _("Filter „{text}“: {count} von {count2} Treffern").format(text=text, count=len(self.results_data), count2=len(self._all_rows)))
         else:
             announce(self, count_message(self._current_title, len(self.results_data)))
 
@@ -429,7 +441,8 @@ class SearchPanel(wx.Panel):
     def _select_all(self):
         for index in range(self.result_list.GetItemCount()):
             self.result_list.Select(index)
-        announce(self, f"{self.result_list.GetSelectedItemCount()} Treffer markiert")
+        announce(self, _("{count} Treffer markiert").format(
+            count=self.result_list.GetSelectedItemCount()))
 
     # -- Playlist bearbeiten -------------------------------------------------
 
@@ -440,14 +453,14 @@ class SearchPanel(wx.Panel):
     def _remove_from_playlist(self):
         playlist_id = self._playlist_id()
         if not playlist_id:
-            announce(self, "Diese Ansicht ist keine bearbeitbare Playlist.")
+            announce(self, _("Diese Ansicht ist keine bearbeitbare Playlist."))
             return
         remove_tracks(self, playlist_id, self.get_selected_items(), on_done=self._reload_current)
 
     def _move_in_playlist(self, direction: int):
         playlist_id = self._playlist_id()
         if not playlist_id:
-            announce(self, "Diese Ansicht ist keine bearbeitbare Playlist.")
+            announce(self, _("Diese Ansicht ist keine bearbeitbare Playlist."))
             return
         item = self.get_selected_item()
         if item:
@@ -456,7 +469,7 @@ class SearchPanel(wx.Panel):
     def _edit_playlist(self):
         playlist_id = self._playlist_id()
         if not playlist_id:
-            announce(self, "Diese Ansicht ist keine bearbeitbare Playlist.")
+            announce(self, _("Diese Ansicht ist keine bearbeitbare Playlist."))
             return
         edit_details(self, playlist_id, on_done=self._reload_current)
 
@@ -472,7 +485,7 @@ class SearchPanel(wx.Panel):
                     self._offset = 0
                     self._run_search(sp, append=False)
                 return
-            announce(self, "Diese Ansicht lässt sich nicht neu laden.")
+            announce(self, _("Diese Ansicht lässt sich nicht neu laden."))
             return
         title, fetch = self._current_fetch
         self._load_view(title, fetch, remember=False)
@@ -503,7 +516,8 @@ class SearchPanel(wx.Panel):
         section = item["section"]
         artist_id = item["artist_id"]
         artist_name = item.get("artist_name", "")
-        title = f"{artist_name} – {ARTIST_SECTION_TITLES.get(section, item.get('name', ''))}".strip(" –")
+        section_title = _(ARTIST_SECTION_TITLES.get(section, item.get("name", "")))
+        title = f"{artist_name} – {section_title}".strip(" –")
         self._load_into_results(
             title, lambda sp: load_artist_section(sp, section, artist_id, artist_name)
         )
@@ -542,14 +556,14 @@ class SearchPanel(wx.Panel):
         """
         sp = client.get()
         if not sp:
-            wx.MessageBox("Zuerst autorisieren!", "Fehler", wx.ICON_ERROR)
+            wx.MessageBox(_("Zuerst autorisieren!"), _("Fehler"), wx.ICON_ERROR)
             return
         if remember:
             self._nav_stack.append(self._snapshot())
         self._current_fetch = (title, fetch)
         self.btn_search.Enable(False)
         self.btn_more.Enable(False)
-        announce(self, f"Lade {title} …", verbose=True)
+        announce(self, _("Lade {title} …").format(title=title), verbose=True)
         wx.BeginBusyCursor()
         origin = focus_origin()
 
@@ -577,8 +591,8 @@ class SearchPanel(wx.Panel):
         if self._nav_stack:
             self._nav_stack.pop()
         applog.error("Laden", error)
-        announce(self, f"Fehler: {short_error(error)}")
-        wx.MessageBox(f"Fehler: {error}", "Fehler", wx.ICON_ERROR)
+        announce(self, _("Fehler: {error}").format(error=short_error(error)))
+        wx.MessageBox(_("Fehler: {error}").format(error=error), _("Fehler"), wx.ICON_ERROR)
 
     def _snapshot(self) -> tuple[list[dict], str, int]:
         """Sichert die aktuelle Ansicht (Zeilen, Titel, markierter Eintrag)."""
@@ -587,7 +601,7 @@ class SearchPanel(wx.Panel):
 
     def _go_back(self):
         if not self._nav_stack:
-            announce(self, "Keine vorherige Ansicht")
+            announce(self, _("Keine vorherige Ansicht"))
             return
         rows, title, selected = self._nav_stack.pop()
         self._filter = ""

@@ -8,6 +8,8 @@ from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth, SpotifyOauthError
 import config as cfg
 
+from i18n import _
+
 # Erweiterte Scopes für Bibliothek, Entdecken und lokale Wiedergabe.
 # "streaming" wird für den Access-Token benötigt, mit dem librespot lokal startet.
 SCOPES = (
@@ -188,11 +190,11 @@ class SpotifyClient:
                 query = parse_qs(urlparse(self.path).query)
                 if "code" in query:
                     result["code"] = query["code"][0]
-                    body = ("<h1>Login erfolgreich</h1>"
-                            "Du kannst dieses Fenster jetzt schließen.")
+                    body = (_("<h1>Login erfolgreich</h1>"
+                            "Du kannst dieses Fenster jetzt schließen."))
                 elif "error" in query:
                     result["error"] = query["error"][0]
-                    body = f"<h1>Login fehlgeschlagen</h1>{result['error']}"
+                    body = _("<h1>Login fehlgeschlagen</h1>{result}").format(result=result['error'])
                 else:
                     # Codelose Anfrage – ignorieren, Server bleibt offen.
                     self.send_response(204)
@@ -243,7 +245,7 @@ class SpotifyClient:
         """Startet/ermittelt ausschließlich das lokale SpotiFlix-Gerät."""
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
 
         from librespot_manager import DEVICE_NAME, librespot
 
@@ -275,18 +277,17 @@ class SpotifyClient:
             delay = min(delay * 1.5, 4.0)
 
         device_names = ", ".join(device.get("name", "?") for device in last_devices) or "keine"
-        detail = f"\n\nGefundene Spotify-Geräte: {device_names}"
+        detail = _("\n\nGefundene Spotify-Geräte: {device_names}").format(device_names=device_names)
         if librespot.login_problem():
             detail += (
-                "\n\nSpotify hat die Anmeldung des Geräts abgelehnt. Melden Sie den "
-                "lokalen Player über 'Extras > Lokalen Player neu anmelden' erneut an."
+                _("\n\nSpotify hat die Anmeldung des Geräts abgelehnt. Melden Sie den "
+                "lokalen Player über 'Extras > Lokalen Player neu anmelden' erneut an.")
             )
         log = librespot.last_log()
         if log:
             detail += f"\n\nlibrespot-Log:\n{log}"
         raise RuntimeError(
-            f"Der lokale Player '{DEVICE_NAME}' wurde gestartet, aber nicht als Spotify-Gerät gefunden."
-            f"{detail}"
+            _("Der lokale Player '{DEVICE_NAME}' wurde gestartet, aber nicht als Spotify-Gerät gefunden.{detail}").format(DEVICE_NAME=DEVICE_NAME, detail=detail)
         )
 
     def clear_local_device_cache(self):
@@ -308,7 +309,7 @@ class SpotifyClient:
         """Listet die verfügbaren Spotify-Connect-Geräte des Kontos."""
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
         devices = sp.devices().get("devices", []) or []
         return [
             {
@@ -333,9 +334,7 @@ class SpotifyClient:
                 self._device_cache = (name, device["id"], time.time())
                 return device["id"]
         raise RuntimeError(
-            f"Das Wiedergabegerät „{name}“ ist gerade nicht verfügbar.\n"
-            "Schalten Sie es ein oder wählen Sie unter 'Extras > Wiedergabegerät …' "
-            "ein anderes Gerät."
+            _("Das Wiedergabegerät „{name}“ ist gerade nicht verfügbar.\nSchalten Sie es ein oder wählen Sie unter 'Extras > Wiedergabegerät …' ein anderes Gerät.").format(name=name)
         )
 
     def _playback_device_id(self) -> str:
@@ -357,7 +356,7 @@ class SpotifyClient:
         """Startet den lokalen Player, wartet auf das Connect-Gerät und transferiert die Wiedergabe."""
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
 
         device_id = self._local_device_id()
         sp.transfer_playback(device_id=device_id, force_play=False)
@@ -409,8 +408,8 @@ class SpotifyClient:
                 # Playlist – ein Show-URI führt zu HTTP 400. Podcasts werden
                 # darum als Episodenliste geöffnet (siehe browse_common).
                 raise RuntimeError(
-                    "Podcasts lassen sich nicht direkt abspielen.\n"
-                    "Öffnen Sie den Podcast mit Enter und wählen Sie eine Episode."
+                    _("Podcasts lassen sich nicht direkt abspielen.\n"
+                    "Öffnen Sie den Podcast mit Enter und wählen Sie eine Episode.")
                 )
             if uri:
                 if not single:
@@ -439,13 +438,11 @@ class SpotifyClient:
                 device = cfg.get_playback_device()
                 if device:
                     raise Exception(
-                        f"Das Wiedergabegerät „{device}“ hat den Befehl nicht angenommen.\n"
-                        "Prüfen Sie, ob es noch online ist, oder wählen Sie unter "
-                        "'Extras > Wiedergabegerät …' ein anderes Gerät."
+                        _("Das Wiedergabegerät „{device}“ hat den Befehl nicht angenommen.\nPrüfen Sie, ob es noch online ist, oder wählen Sie unter 'Extras > Wiedergabegerät …' ein anderes Gerät.").format(device=device)
                     )
                 raise Exception(
-                    "Der lokale Spotify-Player ist noch nicht als Gerät verfügbar.\n"
-                    "Starten Sie ihn über 'Extras > Lokalen Player starten' oder versuchen Sie es erneut."
+                    _("Der lokale Spotify-Player ist noch nicht als Gerät verfügbar.\n"
+                    "Starten Sie ihn über 'Extras > Lokalen Player starten' oder versuchen Sie es erneut.")
                 )
             raise e
 
@@ -621,7 +618,7 @@ class SpotifyClient:
         """Listet Playlists, in die der Nutzer Titel hinzufügen darf (eigene + kollaborative)."""
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
         me = self._current_user_id()
         editable: list[dict] = []
         all_playlists: list[dict] = []
@@ -648,7 +645,7 @@ class SpotifyClient:
         """Liefert alle Titel-URIs eines Albums in Reihenfolge."""
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
         album = sp.album(album_id)
         uris: list[str] = []
         page = album.get("tracks")
@@ -665,7 +662,7 @@ class SpotifyClient:
         """Liefert alle Titel-URIs einer Playlist in Reihenfolge."""
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
         uris: list[str] = []
         page = sp.playlist_items(playlist_id, fields="next,items(track(uri))", limit=100)
         while page:
@@ -730,7 +727,7 @@ class SpotifyClient:
         """Speichert ein Element in der Mediathek bzw. entfernt es wieder."""
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
         if not item_id:
             return False
         if item_type == "artist":
@@ -755,7 +752,7 @@ class SpotifyClient:
         """Liefert Name, Beschreibung und Besitzverhältnisse einer Playlist."""
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
         data = sp.playlist(
             playlist_id,
             fields="id,name,description,collaborative,snapshot_id,owner(id,display_name)",
@@ -783,12 +780,12 @@ class SpotifyClient:
         """Ändert Name und/oder Beschreibung einer Playlist."""
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
         kwargs = {}
         if name is not None:
             name = name.strip()
             if not name:
-                raise ValueError("Der Name der Playlist darf nicht leer sein.")
+                raise ValueError(_("Der Name der Playlist darf nicht leer sein."))
             kwargs["name"] = name
         if description is not None:
             kwargs["description"] = description.strip()
@@ -805,7 +802,7 @@ class SpotifyClient:
         """
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
         entries = [(uri, position) for uri, position in entries if uri and position is not None]
         if not entries:
             return 0
@@ -818,7 +815,7 @@ class SpotifyClient:
         """Verschiebt einen Titel innerhalb der Playlist."""
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
         if position == insert_before or position + 1 == insert_before:
             return False
         sp.playlist_reorder_items(playlist_id, position, insert_before, range_length=1)
@@ -828,10 +825,10 @@ class SpotifyClient:
         """Legt eine neue Playlist im Konto des Nutzers an."""
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
         name = (name or "").strip()
         if not name:
-            raise ValueError("Bitte einen Namen für die Playlist eingeben.")
+            raise ValueError(_("Bitte einen Namen für die Playlist eingeben."))
         created = sp.current_user_playlist_create(name, public=public, description=description) or {}
         return {"id": created.get("id"), "name": created.get("name", name)}
 
@@ -839,7 +836,7 @@ class SpotifyClient:
         """Liefert die zuletzt gehörten Titel (neueste zuerst, ohne Duplikate)."""
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
         results = sp.current_user_recently_played(limit=min(50, limit)) or {}
         tracks = []
         seen = set()
@@ -864,7 +861,7 @@ class SpotifyClient:
         """Fügt Titel/Episoden zu einer Playlist hinzu und gibt deren Anzahl zurück."""
         sp = self.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
         uris = [uri for uri in uris if uri]
         if not uris:
             return 0

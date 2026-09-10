@@ -18,6 +18,8 @@ import atexit
 
 import config as cfg
 
+from i18n import _
+
 DEVICE_NAME = "SpotiFlix"
 LIBRESPOT_CACHE_DIR = os.path.join(os.path.expanduser("~"), ".spotiflix-librespot-cache")
 # librespot liest seine Anmeldung aus dieser Datei im Cache-Verzeichnis.
@@ -113,9 +115,9 @@ class LibrespotManager:
         ensure_login()
         if not self._seed_credentials():
             raise ValueError(
-                "Für den lokalen Player fehlt die librespot-Anmeldung.\n"
+                _("Für den lokalen Player fehlt die librespot-Anmeldung.\n"
                 "Sie öffnet sich einmalig im Browser – bitte dort bestätigen "
-                "und den Player erneut starten."
+                "und den Player erneut starten.")
             )
 
     def reset_login(self) -> None:
@@ -194,7 +196,7 @@ class LibrespotManager:
             if self._process.poll() is not None:
                 err = self.last_log()
                 self._process = None
-                raise RuntimeError(f"librespot konnte nicht gestartet werden:\n\n{err}")
+                raise RuntimeError(_("librespot konnte nicht gestartet werden:\n\n{err}").format(err=err))
 
     def stop(self) -> None:
         """Stoppt den librespot-Prozess."""

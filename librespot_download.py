@@ -21,6 +21,8 @@ from collections import OrderedDict
 
 import config as cfg
 
+from i18n import _
+
 # librespot-python liefert vorgenerierte Protobuf-Dateien (_pb2.py) aus einer
 # alten protoc-Version. Ab protobuf 4 verweigert die C++-Implementierung deren
 # Laden ("Descriptors cannot be created directly"), und der Download bricht mit
@@ -61,10 +63,10 @@ def _require_librespot():
         from librespot.core import Session  # noqa: F401
     except ImportError:
         raise RuntimeError(
-            "Die Bibliothek 'librespot' ist nicht installiert.\n"
+            _("Die Bibliothek 'librespot' ist nicht installiert.\n"
             "Installieren Sie sie mit: pip install librespot\n\n"
             "Oder wählen Sie in den Einstellungen die Download-Methode "
-            "'YouTube-Quelle (spotdl)'."
+            "'YouTube-Quelle (spotdl)'.")
         )
     except TypeError as error:
         # Tritt auf, wenn google.protobuf schon vor dieser Datei importiert
@@ -72,14 +74,14 @@ def _require_librespot():
         if "Descriptors cannot" not in str(error):
             raise
         raise RuntimeError(
-            "Die librespot-Bibliothek passt nicht zur installierten "
+            _("Die librespot-Bibliothek passt nicht zur installierten "
             "protobuf-Version.\n\n"
             "Setzen Sie die Umgebungsvariable "
             "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python, bevor Sie SpotiFlix "
             "starten, oder installieren Sie protobuf 3.20:\n"
             "  pip install \"protobuf<4\"\n\n"
             "Alternativ in den Einstellungen die Download-Methode "
-            "'YouTube-Quelle (spotdl)' wählen."
+            "'YouTube-Quelle (spotdl)' wählen.")
         )
 
 
@@ -175,9 +177,9 @@ def _fit_path(output_dir: str, segments: list[str]) -> str:
     path = os.path.join(output_dir, *trimmed)
     if len(path) > MAX_PATH_LENGTH:
         raise RuntimeError(
-            "Der Zielpfad für den Download ist zu lang.\n"
+            _("Der Zielpfad für den Download ist zu lang.\n"
             "Wählen Sie einen kürzeren Download-Ordner oder eine einfachere "
-            "Namensvorlage (Bearbeiten > Einstellungen)."
+            "Namensvorlage (Bearbeiten > Einstellungen).")
         )
     return path
 
@@ -331,9 +333,9 @@ def _require_ffmpeg() -> str:
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise RuntimeError(
-            "Für MP3-/M4A-Downloads wird 'ffmpeg' benötigt, es wurde aber nicht gefunden.\n"
+            _("Für MP3-/M4A-Downloads wird 'ffmpeg' benötigt, es wurde aber nicht gefunden.\n"
             "Installieren Sie ffmpeg und stellen Sie sicher, dass es im PATH liegt, "
-            "oder wählen Sie in den Einstellungen das Download-Format 'OGG Vorbis'."
+            "oder wählen Sie in den Einstellungen das Download-Format 'OGG Vorbis'.")
         )
     return ffmpeg
 
@@ -362,8 +364,8 @@ def _transcode(ogg_path: str, target: str, fmt: str):
     )
     if result.returncode != 0:
         raise RuntimeError(
-            "ffmpeg konnte die Datei nicht umwandeln:\n"
-            + (result.stderr or result.stdout or "Unbekannter ffmpeg-Fehler").strip()
+            _("ffmpeg konnte die Datei nicht umwandeln:") + "\n"
+            + (result.stderr or result.stdout or _("Unbekannter ffmpeg-Fehler")).strip()
         )
 
 
@@ -513,16 +515,16 @@ def _resolve_tracks(item: dict) -> list[dict]:
 
     sp = client.get()
     if not sp:
-        raise RuntimeError("Zuerst autorisieren!")
+        raise RuntimeError(_("Zuerst autorisieren!"))
 
     if item_type == "episode":
         if not uri:
-            raise RuntimeError("Kein Spotify-URI für dieses Element verfügbar.")
+            raise RuntimeError(_("Kein Spotify-URI für dieses Element verfügbar."))
         return [_episode_meta(sp.episode(uri))]
 
     if item_type == "track":
         if not uri:
-            raise RuntimeError("Kein Spotify-URI für dieses Element verfügbar.")
+            raise RuntimeError(_("Kein Spotify-URI für dieses Element verfügbar."))
         # Vollständigen Titel holen (Cover, ISRC, Album-Infos sind in der UI-Zeile nicht enthalten).
         track = sp.track(uri)
         album = track.get("album") or {}
@@ -532,7 +534,7 @@ def _resolve_tracks(item: dict) -> list[dict]:
 
     item_id = item.get("id")
     if not item_id:
-        raise RuntimeError("Keine Spotify-ID für dieses Element verfügbar.")
+        raise RuntimeError(_("Keine Spotify-ID für dieses Element verfügbar."))
 
     if item_type == "album":
         album = sp.album(item_id)
@@ -570,7 +572,7 @@ def _resolve_tracks(item: dict) -> list[dict]:
         _load_genres(sp, [_primary_artist_id(t) for t in top])
         return [_track_meta(track) for track in top]
 
-    raise RuntimeError(f"Download für Typ '{item_type}' wird nicht unterstützt.")
+    raise RuntimeError(_("Download für Typ '{item_type}' wird nicht unterstützt.").format(item_type=item_type))
 
 
 # Album-Label je Album-ID zwischenspeichern (nur am vollständigen Album verfügbar).
@@ -622,7 +624,7 @@ def download_via_librespot(
     _require_librespot()
     tracks = _resolve_tracks(item)
     if not tracks:
-        raise RuntimeError("Keine herunterladbaren Titel gefunden.")
+        raise RuntimeError(_("Keine herunterladbaren Titel gefunden."))
 
     target_dir = os.path.expanduser(output_dir or cfg.get_download_dir())
     os.makedirs(target_dir, exist_ok=True)
@@ -649,12 +651,16 @@ def download_via_librespot(
     if cancelled:
         from download_manager import DownloadCancelled
 
-        raise DownloadCancelled(f"Abgebrochen nach {saved} von {total} Titel(n).")
+        raise DownloadCancelled(
+            _("Abgebrochen nach {saved} von {total} Titel(n).").format(
+                saved=saved, total=total)
+        )
 
     if saved == 0:
-        raise RuntimeError("Download fehlgeschlagen.\n" + "\n".join(errors))
+        raise RuntimeError(_("Download fehlgeschlagen.") + "\n" + "\n".join(errors))
 
-    summary = f"{saved} von {len(tracks)} Titel(n) heruntergeladen."
+    summary = _("{saved} von {total} Titel(n) heruntergeladen.").format(
+        saved=saved, total=len(tracks))
     if errors:
-        summary += "\n\nFehler bei:\n" + "\n".join(errors)
+        summary += "\n\n" + _("Fehler bei:") + "\n" + "\n".join(errors)
     return summary

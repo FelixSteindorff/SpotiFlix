@@ -5,6 +5,7 @@ Navigation, Ansagen und Kontextmenü stecken in ``BrowsePanel`` – hier stehen 
 die Einstiegsabschnitte und ihre Ladefunktionen.
 """
 from spotify_client import client
+from i18n import N_, _
 from ui.browse_common import album_row, artist_row, track_row
 from ui.browse_panel import BrowsePanel
 from ui.panel_helpers import collect_page_items
@@ -13,19 +14,19 @@ from ui.panel_helpers import collect_page_items
 class DiscoverPanel(BrowsePanel):
     """Bietet stabile Einstiegspunkte für neue und persönliche Inhalte."""
 
-    ROOT_TITLE = "Entdecken"
+    ROOT_TITLE = N_("Entdecken")
 
     SECTIONS = [
-        ("new_releases", "Neue Alben", "Aktuelle Neuerscheinungen"),
-        ("top_artists", "Ihre Top-Künstler", "Künstler passend zu Ihrem Hörverlauf"),
-        ("top_tracks", "Ihre Top-Titel", "Titel passend zu Ihrem Hörverlauf"),
-        ("top_artist_releases", "Neues von Top-Künstlern", "Aktuelle Alben und Singles Ihrer Top-Künstler"),
-        ("recent", "Zuletzt gehört", "Ihre zuletzt gespielten Titel"),
+        ("new_releases", N_("Neue Alben"), N_("Aktuelle Neuerscheinungen")),
+        ("top_artists", N_("Ihre Top-Künstler"), N_("Künstler passend zu Ihrem Hörverlauf")),
+        ("top_tracks", N_("Ihre Top-Titel"), N_("Titel passend zu Ihrem Hörverlauf")),
+        ("top_artist_releases", N_("Neues von Top-Künstlern"), N_("Aktuelle Alben und Singles Ihrer Top-Künstler")),
+        ("recent", N_("Zuletzt gehört"), N_("Ihre zuletzt gespielten Titel")),
     ]
 
     def overview_rows(self) -> list[dict]:
         return [
-            {"type": "section", "section": key, "name": name, "details": details}
+            {"type": "section", "section": key, "name": _(name), "details": _(details)}
             for key, name, details in self.SECTIONS
         ]
 
@@ -33,14 +34,15 @@ class DiscoverPanel(BrowsePanel):
         if item.get("type") != "section":
             return False
         loaders = {
-            "new_releases": ("Neue Alben", self._load_new_releases),
-            "top_artists": ("Ihre Top-Künstler", self._load_top_artists),
-            "top_tracks": ("Ihre Top-Titel", self._load_top_tracks),
-            "top_artist_releases": ("Neues von Top-Künstlern", self._load_top_artist_releases),
-            "recent": ("Zuletzt gehört", self._load_recently_played),
+            "new_releases": self._load_new_releases,
+            "top_artists": self._load_top_artists,
+            "top_tracks": self._load_top_tracks,
+            "top_artist_releases": self._load_top_artist_releases,
+            "recent": self._load_recently_played,
         }
         section = item["section"]
-        title, worker = loaders[section]
+        # Der Titel der Unteransicht ist der Name der Abschnittszeile.
+        title, worker = item.get("name", section), loaders[section]
         self._push_and_load(section, title, worker)
         return True
 

@@ -13,7 +13,15 @@ os.environ.setdefault("PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION", "python")
 import wx
 
 import config as cfg
-from ui.main_window import MainWindow
+import i18n
+
+# Die Sprache muss stehen, bevor die Oberfläche importiert wird: Beschriftungen
+# in Klassenattributen entstehen beim Import.
+i18n.install(cfg.get_language())
+
+from ui.main_window import MainWindow  # noqa: E402
+
+from i18n import _
 
 
 def main():
@@ -21,7 +29,7 @@ def main():
     frame = MainWindow()
     if not cfg.has_credentials():
         frame.SetStatusText(
-            "Bitte zuerst Spotify API konfigurieren: Bearbeiten > Einstellungen"
+            _("Bitte zuerst Spotify API konfigurieren: Bearbeiten > Einstellungen")
         )
     frame.Show()
     app.MainLoop()

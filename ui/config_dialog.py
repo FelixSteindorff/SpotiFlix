@@ -2,190 +2,209 @@
 Dialog für Spotify API Konfiguration
 """
 import wx
+
 import config as cfg
+import i18n
+
+from i18n import _
 
 
 class ConfigurationDialog(wx.Dialog):
     """Konfigurationsdialog – validiert intern und gibt Daten über Methoden zurück."""
 
     def __init__(self, parent):
-        super().__init__(parent, title="Einstellungen", size=(650, 700))
+        super().__init__(parent, title=_("Einstellungen"), size=(650, 700))
 
         panel = wx.Panel(self)
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         info_text = wx.StaticText(
             panel,
-            label="Geben Sie Ihre Spotify API-Credentials ein:\n"
-                  "Diese werden sicher im System-Schlüsselspeicher gespeichert.",
+            label=_("Geben Sie Ihre Spotify API-Credentials ein:\n"
+                  "Diese werden sicher im System-Schlüsselspeicher gespeichert."),
         )
         sizer.Add(info_text, 0, wx.ALL | wx.EXPAND, 10)
         sizer.Add(wx.StaticLine(panel), 0, wx.EXPAND | wx.ALL, 5)
 
-        client_id_label = wx.StaticText(panel, label="Client-ID:")
+        client_id_label = wx.StaticText(panel, label=_("Client-ID:"))
         self.client_id_input = wx.TextCtrl(panel)
-        self.client_id_input.SetToolTip("Ihre Spotify Client-ID vom Developer Dashboard")
+        self.client_id_input.SetToolTip(_("Ihre Spotify Client-ID vom Developer Dashboard"))
         saved_id = cfg.get_client_id()
         if saved_id:
             self.client_id_input.SetValue(saved_id)
         sizer.Add(client_id_label, 0, wx.TOP, 5)
         sizer.Add(self.client_id_input, 1, wx.ALL | wx.EXPAND, 10)
 
-        client_secret_label = wx.StaticText(panel, label="Client-Secret:")
+        client_secret_label = wx.StaticText(panel, label=_("Client-Secret:"))
         self.client_secret_input = wx.TextCtrl(panel, style=wx.TE_PASSWORD)
-        self.client_secret_input.SetToolTip("Ihr Spotify Client-Secret vom Developer Dashboard")
+        self.client_secret_input.SetToolTip(_("Ihr Spotify Client-Secret vom Developer Dashboard"))
         saved_secret = cfg.get_client_secret()
         if saved_secret:
             self.client_secret_input.SetValue(saved_secret)
         sizer.Add(client_secret_label, 0, wx.TOP, 5)
         sizer.Add(self.client_secret_input, 1, wx.ALL | wx.EXPAND, 10)
 
-        playback_quality_label = wx.StaticText(panel, label="Wiedergabequalität:")
+        playback_quality_label = wx.StaticText(panel, label=_("Wiedergabequalität:"))
         self.playback_quality_combo = wx.ComboBox(
             panel,
-            choices=list(cfg.PLAYBACK_QUALITIES.values()),
+            choices=[_(label) for label in cfg.PLAYBACK_QUALITIES.values()],
             style=wx.CB_READONLY,
         )
         playback_values = list(cfg.PLAYBACK_QUALITIES.keys())
         self._playback_quality_values = playback_values
         self.playback_quality_combo.SetSelection(playback_values.index(cfg.get_playback_quality()))
-        self.playback_quality_combo.SetToolTip("Bitrate für lokale Wiedergabe über librespot")
+        self.playback_quality_combo.SetToolTip(_("Bitrate für lokale Wiedergabe über librespot"))
         sizer.Add(playback_quality_label, 0, wx.TOP, 5)
         sizer.Add(self.playback_quality_combo, 1, wx.ALL | wx.EXPAND, 10)
 
-        self.volume_normalisation = wx.CheckBox(panel, label="Lautstärke normalisieren")
+        self.volume_normalisation = wx.CheckBox(panel, label=_("Lautstärke normalisieren"))
         self.volume_normalisation.SetValue(cfg.get_volume_normalisation())
         self.volume_normalisation.SetToolTip(
-            "Gleicht Lautstärkeunterschiede zwischen Alben aus (librespot). "
-            "Die Änderung greift, sobald der lokale Player neu startet."
+            _("Gleicht Lautstärkeunterschiede zwischen Alben aus (librespot). "
+            "Die Änderung greift, sobald der lokale Player neu startet.")
         )
         sizer.Add(self.volume_normalisation, 0, wx.ALL, 10)
 
-        initial_volume_label = wx.StaticText(panel, label="Startlautstärke (Prozent):")
+        initial_volume_label = wx.StaticText(panel, label=_("Startlautstärke (Prozent):"))
         self.initial_volume = wx.SpinCtrl(panel, min=0, max=100, initial=cfg.get_initial_volume())
-        self.initial_volume.SetName("Startlautstärke in Prozent")
-        self.initial_volume.SetToolTip("Lautstärke, mit der der lokale Player startet")
+        self.initial_volume.SetName(_("Startlautstärke in Prozent"))
+        self.initial_volume.SetToolTip(_("Lautstärke, mit der der lokale Player startet"))
         sizer.Add(initial_volume_label, 0, wx.TOP, 5)
         sizer.Add(self.initial_volume, 0, wx.ALL | wx.EXPAND, 10)
 
-        autoplay_label = wx.StaticText(panel, label="Autoplay:")
+        autoplay_label = wx.StaticText(panel, label=_("Autoplay:"))
         self.autoplay_combo = wx.ComboBox(
             panel,
-            choices=list(cfg.AUTOPLAY_MODES.values()),
+            choices=[_(label) for label in cfg.AUTOPLAY_MODES.values()],
             style=wx.CB_READONLY,
         )
         autoplay_values = list(cfg.AUTOPLAY_MODES.keys())
         self._autoplay_values = autoplay_values
         self.autoplay_combo.SetSelection(autoplay_values.index(cfg.get_autoplay()))
         self.autoplay_combo.SetToolTip(
-            "Was passiert nach einem einzelnen Titel: Aus = nur dieser Titel; "
+            _("Was passiert nach einem einzelnen Titel: Aus = nur dieser Titel; "
             "In Playlist/Album fortsetzen = der Kontext läuft weiter; "
-            "Immer weiterspielen = auch einzelne Titel reihen die folgende Liste in die Warteschlange."
+            "Immer weiterspielen = auch einzelne Titel reihen die folgende Liste in die Warteschlange.")
         )
         sizer.Add(autoplay_label, 0, wx.TOP, 5)
         sizer.Add(self.autoplay_combo, 1, wx.ALL | wx.EXPAND, 10)
 
-        verbosity_label = wx.StaticText(panel, label="Ansagen (Screenreader):")
+        language_label = wx.StaticText(panel, label=_("Sprache / Language:"))
+        self.language_combo = wx.ComboBox(
+            panel,
+            choices=list(i18n.LANGUAGES.values()),
+            style=wx.CB_READONLY,
+        )
+        language_values = list(i18n.LANGUAGES.keys())
+        self._language_values = language_values
+        self.language_combo.SetSelection(language_values.index(cfg.get_language()))
+        self.language_combo.SetToolTip(
+            _("Sprache der Oberfläche. Die Änderung wirkt nach einem Neustart.")
+        )
+        sizer.Add(language_label, 0, wx.TOP, 5)
+        sizer.Add(self.language_combo, 1, wx.ALL | wx.EXPAND, 10)
+
+        verbosity_label = wx.StaticText(panel, label=_("Ansagen (Screenreader):"))
         self.verbosity_combo = wx.ComboBox(
             panel,
-            choices=list(cfg.VERBOSITY_MODES.values()),
+            choices=[_(label) for label in cfg.VERBOSITY_MODES.values()],
             style=wx.CB_READONLY,
         )
         verbosity_values = list(cfg.VERBOSITY_MODES.keys())
         self._verbosity_values = verbosity_values
         self.verbosity_combo.SetSelection(verbosity_values.index(cfg.get_verbosity()))
         self.verbosity_combo.SetToolTip(
-            "Ausführlich sagt auch Zwischenmeldungen wie „Lade Alben …“ an; "
-            "Kurz sagt nur Ergebnisse und Fehler an (die Statusleiste zeigt weiterhin alles)."
+            _("Ausführlich sagt auch Zwischenmeldungen wie „Lade Alben …“ an; "
+            "Kurz sagt nur Ergebnisse und Fehler an (die Statusleiste zeigt weiterhin alles).")
         )
         sizer.Add(verbosity_label, 0, wx.TOP, 5)
         sizer.Add(self.verbosity_combo, 1, wx.ALL | wx.EXPAND, 10)
 
-        download_method_label = wx.StaticText(panel, label="Download-Methode:")
+        download_method_label = wx.StaticText(panel, label=_("Download-Methode:"))
         self.download_method_combo = wx.ComboBox(
             panel,
-            choices=list(cfg.DOWNLOAD_METHODS.values()),
+            choices=[_(label) for label in cfg.DOWNLOAD_METHODS.values()],
             style=wx.CB_READONLY,
         )
         method_values = list(cfg.DOWNLOAD_METHODS.keys())
         self._download_method_values = method_values
         self.download_method_combo.SetSelection(method_values.index(cfg.get_download_method()))
         self.download_method_combo.SetToolTip(
-            "librespot lädt den echten Spotify-Stream (OGG, Premium für 320 kbit/s); "
-            "spotdl bezieht das Audio über YouTube als MP3."
+            _("librespot lädt den echten Spotify-Stream (OGG, Premium für 320 kbit/s); "
+            "spotdl bezieht das Audio über YouTube als MP3.")
         )
         sizer.Add(download_method_label, 0, wx.TOP, 5)
         sizer.Add(self.download_method_combo, 1, wx.ALL | wx.EXPAND, 10)
 
-        download_format_label = wx.StaticText(panel, label="Download-Format (librespot):")
+        download_format_label = wx.StaticText(panel, label=_("Download-Format (librespot):"))
         self.download_format_combo = wx.ComboBox(
             panel,
-            choices=list(cfg.DOWNLOAD_FORMATS.values()),
+            choices=[_(label) for label in cfg.DOWNLOAD_FORMATS.values()],
             style=wx.CB_READONLY,
         )
         format_values = list(cfg.DOWNLOAD_FORMATS.keys())
         self._download_format_values = format_values
         self.download_format_combo.SetSelection(format_values.index(cfg.get_download_format()))
         self.download_format_combo.SetToolTip(
-            "Dateiformat für Downloads über librespot. OGG ist der unveränderte "
+            _("Dateiformat für Downloads über librespot. OGG ist der unveränderte "
             "Spotify-Stream; MP3 und M4A werden per ffmpeg umgewandelt (ffmpeg muss "
-            "installiert sein)."
+            "installiert sein).")
         )
         sizer.Add(download_format_label, 0, wx.TOP, 5)
         sizer.Add(self.download_format_combo, 1, wx.ALL | wx.EXPAND, 10)
 
-        download_quality_label = wx.StaticText(panel, label="Downloadqualität:")
+        download_quality_label = wx.StaticText(panel, label=_("Downloadqualität:"))
         self.download_quality_combo = wx.ComboBox(
             panel,
-            choices=list(cfg.DOWNLOAD_QUALITIES.values()),
+            choices=[_(label) for label in cfg.DOWNLOAD_QUALITIES.values()],
             style=wx.CB_READONLY,
         )
         download_values = list(cfg.DOWNLOAD_QUALITIES.keys())
         self._download_quality_values = download_values
         self.download_quality_combo.SetSelection(download_values.index(cfg.get_download_quality()))
-        self.download_quality_combo.SetToolTip("Bitrate für Downloads über spotdl")
+        self.download_quality_combo.SetToolTip(_("Bitrate für Downloads über spotdl"))
         sizer.Add(download_quality_label, 0, wx.TOP, 5)
         sizer.Add(self.download_quality_combo, 1, wx.ALL | wx.EXPAND, 10)
 
-        parallel_label = wx.StaticText(panel, label="Gleichzeitige Downloads:")
+        parallel_label = wx.StaticText(panel, label=_("Gleichzeitige Downloads:"))
         self.download_parallel = wx.SpinCtrl(
             panel, min=1, max=cfg.MAX_DOWNLOAD_PARALLEL, initial=cfg.get_download_parallel()
         )
-        self.download_parallel.SetName("Gleichzeitige Downloads")
+        self.download_parallel.SetName(_("Gleichzeitige Downloads"))
         self.download_parallel.SetToolTip(
-            "Wie viele Downloads gleichzeitig laufen; der Rest wartet in der Warteschlange."
+            _("Wie viele Downloads gleichzeitig laufen; der Rest wartet in der Warteschlange.")
         )
         sizer.Add(parallel_label, 0, wx.TOP, 5)
         sizer.Add(self.download_parallel, 0, wx.ALL | wx.EXPAND, 10)
 
-        download_label = wx.StaticText(panel, label="Download-Ordner:")
+        download_label = wx.StaticText(panel, label=_("Download-Ordner:"))
         self.download_dir_input = wx.DirPickerCtrl(
             panel,
             path=cfg.get_download_dir(),
-            message="Download-Ordner auswählen",
+            message=_("Download-Ordner auswählen"),
             style=wx.DIRP_USE_TEXTCTRL,
         )
-        self.download_dir_input.SetToolTip("Zielordner für Downloads über das Kontextmenü")
+        self.download_dir_input.SetToolTip(_("Zielordner für Downloads über das Kontextmenü"))
         sizer.Add(download_label, 0, wx.TOP, 5)
         sizer.Add(self.download_dir_input, 1, wx.ALL | wx.EXPAND, 10)
 
-        template_label = wx.StaticText(panel, label="Download-Ordnerstruktur:")
+        template_label = wx.StaticText(panel, label=_("Download-Ordnerstruktur:"))
         self.download_template_input = wx.TextCtrl(panel)
         self.download_template_input.SetValue(cfg.get_download_template())
-        self.download_template_input.SetToolTip("Beispiel: %artist%/%album%/%num,2% - %title%")
+        self.download_template_input.SetToolTip(_("Beispiel: %artist%/%album%/%num,2% - %title%"))
         sizer.Add(template_label, 0, wx.TOP, 5)
         sizer.Add(self.download_template_input, 1, wx.ALL | wx.EXPAND, 10)
 
         hint_text = wx.StaticText(
             panel,
-            label="Credentials finden Sie unter: https://developer.spotify.com/dashboard",
+            label=_("Credentials finden Sie unter: https://developer.spotify.com/dashboard"),
         )
         sizer.Add(hint_text, 0, wx.ALL | wx.EXPAND, 10)
 
         btn_box = wx.BoxSizer(wx.HORIZONTAL)
-        btn_save = wx.Button(panel, id=wx.ID_OK, label="Speichern")
+        btn_save = wx.Button(panel, id=wx.ID_OK, label=_("Speichern"))
         btn_save.SetDefault()
-        btn_cancel = wx.Button(panel, id=wx.ID_CANCEL, label="Abbrechen")
+        btn_cancel = wx.Button(panel, id=wx.ID_CANCEL, label=_("Abbrechen"))
         btn_box.Add(btn_save, 1, wx.ALL | wx.EXPAND, 5)
         btn_box.Add(btn_cancel, 1, wx.ALL | wx.EXPAND, 5)
         sizer.Add(btn_box, 0, wx.ALL | wx.EXPAND, 10)
@@ -198,13 +217,13 @@ class ConfigurationDialog(wx.Dialog):
 
     def _on_ok(self, event):
         if bool(self.get_client_id()) != bool(self.get_client_secret()):
-            wx.MessageBox("Bitte Client-ID und Client-Secret gemeinsam ausfüllen.", "Fehler", wx.ICON_ERROR)
+            wx.MessageBox(_("Bitte Client-ID und Client-Secret gemeinsam ausfüllen."), _("Fehler"), wx.ICON_ERROR)
             return
         if not self.get_download_dir():
-            wx.MessageBox("Bitte einen Download-Ordner auswählen.", "Fehler", wx.ICON_ERROR)
+            wx.MessageBox(_("Bitte einen Download-Ordner auswählen."), _("Fehler"), wx.ICON_ERROR)
             return
         if not self.get_download_template():
-            wx.MessageBox("Bitte eine Download-Ordnerstruktur eintragen.", "Fehler", wx.ICON_ERROR)
+            wx.MessageBox(_("Bitte eine Download-Ordnerstruktur eintragen."), _("Fehler"), wx.ICON_ERROR)
             return
         self.EndModal(wx.ID_OK)
 
@@ -231,6 +250,9 @@ class ConfigurationDialog(wx.Dialog):
 
     def get_autoplay(self) -> str:
         return self._autoplay_values[self.autoplay_combo.GetSelection()]
+
+    def get_language(self) -> str:
+        return self._language_values[self.language_combo.GetSelection()]
 
     def get_verbosity(self) -> str:
         return self._verbosity_values[self.verbosity_combo.GetSelection()]
@@ -263,6 +285,7 @@ class ConfigurationDialog(wx.Dialog):
                 self.get_download_format(),
                 self.get_autoplay(),
                 self.get_verbosity(),
+                self.get_language(),
                 self.get_volume_normalisation(),
                 self.get_initial_volume(),
                 self.get_download_parallel(),

@@ -18,13 +18,17 @@ import applog
 from spotify_client import client
 from ui.panel_helpers import announce, call_after, format_position, short_error
 
+from i18n import N_, _
+
 #: Erkennt sowohl "spotify:track:ID" als auch open.spotify.com-Links.
 _URI_PATTERN = re.compile(
     r"spotify:(track|episode):([A-Za-z0-9]+)"
     r"|open\.spotify\.com/(?:intl-\w+/)?(track|episode)/([A-Za-z0-9]+)"
 )
 
-_WILDCARD = "CSV-Datei (*.csv)|*.csv|M3U-Playlist (*.m3u8)|*.m3u8|Textdatei (*.txt)|*.txt"
+# Erst beim Öffnen des Dialogs übersetzen – beim Import steht die Sprache
+# noch nicht.
+_WILDCARD = N_("CSV-Datei (*.csv)|*.csv|M3U-Playlist (*.m3u8)|*.m3u8|Textdatei (*.txt)|*.txt")
 
 
 def _safe_name(name: str) -> str:
@@ -37,19 +41,19 @@ def export_rows(panel: wx.Window, rows: list[dict], title: str = "Titelliste"):
     """Speichert die übergebenen Zeilen als CSV, M3U8 oder Textdatei."""
     rows = [row for row in rows if row.get("uri")]
     if not rows:
-        announce(panel, "Diese Ansicht enthält nichts zum Exportieren.")
+        announce(panel, _("Diese Ansicht enthält nichts zum Exportieren."))
         return
 
     dialog = wx.FileDialog(
         panel.GetTopLevelParent(),
-        message="Titelliste speichern",
+        message=_("Titelliste speichern"),
         defaultFile=_safe_name(title) + ".csv",
-        wildcard=_WILDCARD,
+        wildcard=_(_WILDCARD),
         style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
     )
     if dialog.ShowModal() != wx.ID_OK:
         dialog.Destroy()
-        announce(panel, "Export abgebrochen")
+        announce(panel, _("Export abgebrochen"))
         return
     path = dialog.GetPath()
     dialog.Destroy()
@@ -61,19 +65,19 @@ def export_rows(panel: wx.Window, rows: list[dict], title: str = "Titelliste"):
             _write_csv(path, rows)
     except Exception as e:
         applog.error("Export", e)
-        announce(panel, f"Export fehlgeschlagen: {short_error(e)}")
-        wx.MessageBox(str(e), "Export-Fehler", wx.ICON_ERROR)
+        announce(panel, _("Export fehlgeschlagen: {short_error}").format(short_error=short_error(e)))
+        wx.MessageBox(str(e), _("Export-Fehler"), wx.ICON_ERROR)
         return
 
     applog.info("Export", f"{len(rows)} Titel nach {path}")
-    announce(panel, f"{len(rows)} Titel exportiert nach {os.path.basename(path)}")
+    announce(panel, _("{count} Titel exportiert nach {path}").format(count=len(rows), path=os.path.basename(path)))
 
 
 def _write_csv(path: str, rows: list[dict]):
     # utf-8-sig, damit Excel die Umlaute richtig anzeigt.
     with open(path, "w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.writer(handle, delimiter=";")
-        writer.writerow(["Titel", "Künstler", "Album", "Dauer", "URI"])
+        writer.writerow([_("Titel"), _("Künstler"), _("Album"), _("Dauer"), "URI"])
         for row in rows:
             writer.writerow([
                 row.get("name", ""),
@@ -116,13 +120,13 @@ def import_playlist(panel: wx.Window, on_done=None):
     """Legt aus den URIs einer Datei eine neue Playlist an."""
     dialog = wx.FileDialog(
         panel.GetTopLevelParent(),
-        message="Titelliste öffnen",
-        wildcard=_WILDCARD,
+        message=_("Titelliste öffnen"),
+        wildcard=_(_WILDCARD),
         style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
     )
     if dialog.ShowModal() != wx.ID_OK:
         dialog.Destroy()
-        announce(panel, "Import abgebrochen")
+        announce(panel, _("Import abgebrochen"))
         return
     path = dialog.GetPath()
     dialog.Destroy()
@@ -131,14 +135,14 @@ def import_playlist(panel: wx.Window, on_done=None):
         uris = read_uris(path)
     except Exception as e:
         applog.error("Import", e)
-        announce(panel, f"Datei konnte nicht gelesen werden: {short_error(e)}")
+        announce(panel, _("Datei konnte nicht gelesen werden: {short_error}").format(short_error=short_error(e)))
         return
     if not uris:
-        announce(panel, "In dieser Datei stehen keine Spotify-Titel.")
+        announce(panel, _("In dieser Datei stehen keine Spotify-Titel."))
         wx.MessageBox(
-            "In der Datei wurden keine Spotify-URIs oder -Links gefunden.\n"
-            "Erwartet werden Einträge wie spotify:track:… oder open.spotify.com/track/…",
-            "Nichts zu importieren",
+            _("In der Datei wurden keine Spotify-URIs oder -Links gefunden.\n"
+            "Erwartet werden Einträge wie spotify:track:… oder open.spotify.com/track/…"),
+            _("Nichts zu importieren"),
             wx.ICON_INFORMATION,
         )
         return
@@ -146,30 +150,31 @@ def import_playlist(panel: wx.Window, on_done=None):
     default_name = os.path.splitext(os.path.basename(path))[0]
     name_dialog = wx.TextEntryDialog(
         panel.GetTopLevelParent(),
-        f"{len(uris)} Titel gefunden.\nName der neuen Playlist:",
-        "Playlist importieren",
+        _("{count} Titel gefunden.\nName der neuen Playlist:").format(count=len(uris)),
+        _("Playlist importieren"),
         default_name,
     )
     accepted = name_dialog.ShowModal() == wx.ID_OK
     name = name_dialog.GetValue().strip()
     name_dialog.Destroy()
     if not accepted or not name:
-        announce(panel, "Import abgebrochen")
+        announce(panel, _("Import abgebrochen"))
         return
 
-    announce(panel, f"Playlist {name} wird angelegt …")
+    announce(panel, _("Playlist {name} wird angelegt …").format(name=name))
 
     def worker():
         try:
-            playlist = client.create_playlist(name, description="Importiert mit SpotiFlix")
+            playlist = client.create_playlist(
+                name, description=_("Importiert mit SpotiFlix"))
             added = client.add_tracks_to_playlist(playlist["id"], uris)
         except Exception as e:
             applog.error("Import", e)
-            call_after(announce, panel, f"Import fehlgeschlagen: {short_error(e)}")
-            call_after(wx.MessageBox, str(e), "Import-Fehler", wx.ICON_ERROR)
+            call_after(announce, panel, _("Import fehlgeschlagen: {short_error}").format(short_error=short_error(e)))
+            call_after(wx.MessageBox, str(e), _("Import-Fehler"), wx.ICON_ERROR)
             return
         applog.info("Import", f"{added} Titel in Playlist {name}")
-        call_after(announce, panel, f"Playlist {name} mit {added} Titeln angelegt")
+        call_after(announce, panel, _("Playlist {name} mit {added} Titeln angelegt").format(name=name, added=added))
         if on_done:
             call_after(on_done)
 

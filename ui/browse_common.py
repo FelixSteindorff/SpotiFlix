@@ -14,6 +14,8 @@ denn die Web API kann eine Show nicht als ``context_uri`` abspielen.
 """
 from ui.panel_helpers import collect_page_items
 
+from i18n import N_, _
+
 
 def section_items(results: dict | None, key: str) -> list:
     """Holt ``results[key]["items"]`` – auch wenn Spotify ``null`` liefert.
@@ -134,10 +136,10 @@ def episode_row(episode: dict, show_name: str = "") -> dict:
     resume_ms = int(resume.get("resume_position_ms") or 0)
     fully_played = bool(resume.get("fully_played"))
     if fully_played:
-        progress = "gehört"
+        progress = _("gehört")
         resume_ms = 0
     elif resume_ms > 0:
-        progress = f"weiter ab {format_duration(resume_ms)}"
+        progress = _("weiter ab {position}").format(position=format_duration(resume_ms))
     else:
         progress = ""
     parts = [
@@ -172,11 +174,12 @@ def load_show_episodes(sp, show_id: str, show_name: str = "") -> list[dict]:
 
 
 # Titel der Künstler-Unterlisten (für die Überschrift der geöffneten Ansicht).
+#: Beschriftungen werden erst beim Öffnen der Ansicht übersetzt.
 ARTIST_SECTION_TITLES = {
-    "top_tracks": "Beliebte Titel",
-    "albums": "Alben",
-    "singles": "Singles & EPs",
-    "playlists": "Playlists",
+    "top_tracks": N_("Beliebte Titel"),
+    "albums": N_("Alben"),
+    "singles": N_("Singles & EPs"),
+    "playlists": N_("Playlists"),
 }
 
 
@@ -188,32 +191,32 @@ def artist_overview_rows(artist_id: str, name: str) -> list[dict]:
             "section": "top_tracks",
             "artist_id": artist_id,
             "artist_name": name,
-            "name": "Beliebte Titel",
-            "details": "Die meistgehörten Titel",
+            "name": _("Beliebte Titel"),
+            "details": _("Die meistgehörten Titel"),
         },
         {
             "type": "artist_section",
             "section": "albums",
             "artist_id": artist_id,
             "artist_name": name,
-            "name": "Alben",
-            "details": "Alle Alben",
+            "name": _("Alben"),
+            "details": _("Alle Alben"),
         },
         {
             "type": "artist_section",
             "section": "singles",
             "artist_id": artist_id,
             "artist_name": name,
-            "name": "Singles & EPs",
-            "details": "Singles und EPs",
+            "name": _("Singles & EPs"),
+            "details": _("Singles und EPs"),
         },
         {
             "type": "artist_section",
             "section": "playlists",
             "artist_id": artist_id,
             "artist_name": name,
-            "name": "Playlists",
-            "details": "Passende Playlists",
+            "name": _("Playlists"),
+            "details": _("Passende Playlists"),
         },
     ]
 

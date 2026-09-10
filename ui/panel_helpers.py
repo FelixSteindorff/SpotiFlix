@@ -23,14 +23,16 @@ from applog import short_error  # bequem für die Panels
 from download_manager import downloads
 from spotify_client import client
 
+from i18n import N_, _
+
 #: Sortiermodi für alle Listenansichten (Schlüssel, Beschriftung).
 SORT_MODES = [
-    ("default", "Standard (wie geladen)"),
-    ("name", "Name A–Z"),
-    ("artist", "Künstler A–Z"),
-    ("album", "Album A–Z"),
-    ("duration", "Dauer (kurz zuerst)"),
-    ("date", "Datum (neueste zuerst)"),
+    ("default", N_("Standard (wie geladen)")),
+    ("name", N_("Name A–Z")),
+    ("artist", N_("Künstler A–Z")),
+    ("album", N_("Album A–Z")),
+    ("duration", N_("Dauer (kurz zuerst)")),
+    ("date", N_("Datum (neueste zuerst)")),
 ]
 
 # Wird beim Schließen des Hauptfensters gesetzt. Hintergrund-Threads (Downloads,
@@ -178,10 +180,10 @@ def filter_rows(rows: list[dict], needle: str) -> list[dict]:
 def count_message(title: str, count: int) -> str:
     """Formuliert die Abschlussmeldung eines Ladevorgangs (auch für 0 Einträge)."""
     if count == 0:
-        return f"{title}: keine Einträge"
+        return _("{title}: keine Einträge").format(title=title)
     if count == 1:
-        return f"{title}: 1 Eintrag"
-    return f"{title}: {count} Einträge"
+        return _("{title}: 1 Eintrag").format(title=title)
+    return _("{title}: {count} Einträge").format(title=title, count=count)
 
 
 def set_status(window: wx.Window, message: str):
@@ -239,15 +241,16 @@ def start_playback(
     uri = item.get("uri")
     name = item.get("name", "")
     if not uri:
-        wx.MessageBox("Kein Spotify-URI für dieses Element verfügbar.", "Fehler", wx.ICON_ERROR)
+        wx.MessageBox(_("Kein Spotify-URI für dieses Element verfügbar."), _("Fehler"), wx.ICON_ERROR)
         return
 
     artist = item.get("artist_name", "")
     now_playing_label = f"{artist} - {name}" if artist else name
     resume_ms = int(item.get("resume_ms") or 0)
-    start_message = f"Starte Wiedergabe: {name}"
+    start_message = _("Starte Wiedergabe: {name}").format(name=name)
     if resume_ms:
-        start_message += f", weiter ab {format_position(resume_ms)}"
+        start_message += _(", weiter ab {position}").format(
+            position=format_position(resume_ms))
     announce(parent, start_message)
 
     def worker():
@@ -261,9 +264,9 @@ def start_playback(
             )
             call_after(mark_local_player_running, parent)
             call_after(set_now_playing, parent, now_playing_label)
-            call_after(announce, parent, f"Wiedergabe gestartet: {name}")
+            call_after(announce, parent, _("Wiedergabe gestartet: {name}").format(name=name))
         except Exception as e:
-            call_after(wx.MessageBox, str(e), "Wiedergabefehler", wx.ICON_WARNING)
+            call_after(wx.MessageBox, str(e), _("Wiedergabefehler"), wx.ICON_WARNING)
 
     threading.Thread(target=worker, daemon=True).start()
 
@@ -340,7 +343,8 @@ def start_download(parent: wx.Window, items):
     for item in items:
         downloads.submit(item)
     if len(items) == 1:
-        announce(parent, f"Download eingereiht: {items[0].get('name') or 'Auswahl'}")
+        announce(parent, _("Download eingereiht: {name}").format(
+            name=items[0].get("name") or _("Auswahl")))
     else:
-        announce(parent, f"{len(items)} Downloads eingereiht")
+        announce(parent, _("{count} Downloads eingereiht").format(count=len(items)))
     applog.info("Download", f"{len(items)} Auftrag/Aufträge eingereiht")

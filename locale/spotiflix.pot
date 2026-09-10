@@ -1,0 +1,2303 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: SpotiFlix\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: spotify_client.py:280
+msgid "\n\nGefundene Spotify-Geräte: {device_names}"
+msgstr ""
+
+#: spotify_client.py:283
+msgid "\n\nSpotify hat die Anmeldung des Geräts abgelehnt. Melden Sie den lokalen Player über 'Extras > Lokalen Player neu anmelden' erneut an."
+msgstr ""
+
+#: ui/main_window.py:765
+msgid " (+{waiting} wartend)"
+msgstr ""
+
+#: applog.py:92
+msgid " (Details: Protokoll, Strg+Umschalt+G)"
+msgstr ""
+
+#: ui/main_window.py:665
+msgid " Einschlaf-Timer: noch {remaining} Minuten."
+msgstr ""
+
+#: ui/main_window.py:80
+msgid " Pausiert."
+msgstr ""
+
+#: ui/main_window.py:82
+msgid " Wiederholung {mode}."
+msgstr ""
+
+#: ui/main_window.py:81
+msgid " Zufall an."
+msgstr ""
+
+#: ui/main_window.py:81
+msgid " Zufall aus."
+msgstr ""
+
+#: ui/main_window.py:78
+msgid " {progress} von {duration}, noch {remaining}."
+msgstr ""
+
+#: ui/main_window.py:607
+msgid " – aktiv"
+msgstr ""
+
+#: ui/queue_panel.py:318
+msgid " – die ersten {played} von {count} Titeln"
+msgstr ""
+
+#: ui/panel_helpers.py:252
+msgid ", weiter ab {position}"
+msgstr ""
+
+#: spotify_client.py:193
+msgid "<h1>Login erfolgreich</h1>Du kannst dieses Fenster jetzt schließen."
+msgstr ""
+
+#: spotify_client.py:197
+msgid "<h1>Login fehlgeschlagen</h1>{result}"
+msgstr ""
+
+#: ui/queue_panel.py:57
+msgid "Ab markiertem Titel abspielen"
+msgstr ""
+
+#: ui/config_dialog.py:207
+#: ui/context_actions.py:421
+#: ui/playlist_edit.py:148
+msgid "Abbrechen"
+msgstr ""
+
+#: librespot_download.py:655
+msgid "Abgebrochen nach {saved} von {total} Titel(n)."
+msgstr ""
+
+#: ui/search_panel.py:180
+msgid "Abspielen"
+msgstr ""
+
+#: ui/queue_panel.py:109
+msgid "Aktualisieren (F5)"
+msgstr ""
+
+#: ui/discover_panel.py:23
+msgid "Aktuelle Alben und Singles Ihrer Top-Künstler"
+msgstr ""
+
+#: ui/discover_panel.py:20
+msgid "Aktuelle Neuerscheinungen"
+msgstr ""
+
+#: ui/browse_common.py:180
+#: ui/browse_common.py:202
+#: ui/library_panel.py:22
+#: ui/search_panel.py:76
+msgid "Alben"
+msgstr ""
+
+#: ui/list_io.py:80
+#: ui/main_window.py:386
+msgid "Album"
+msgstr ""
+
+#: ui/panel_helpers.py:33
+msgid "Album A–Z"
+msgstr ""
+
+#: ui/main_window.py:71
+msgid "Album {album}"
+msgstr ""
+
+#: ui/context_actions.py:90
+msgid "Album öffnen"
+msgstr ""
+
+#: ui/search_panel.py:95
+msgid "Album: "
+msgstr ""
+
+#: ui/browse_common.py:203
+msgid "Alle Alben"
+msgstr ""
+
+#: ui/downloads_dialog.py:40
+msgid "Alle abbrechen"
+msgstr ""
+
+#: ui/browse_panel.py:75
+#: ui/queue_panel.py:60
+#: ui/search_panel.py:110
+msgid "Alles markieren"
+msgstr ""
+
+#: ui/context_actions.py:116
+msgid "Als Schnellzugriff merken"
+msgstr ""
+
+#: ui/browse_panel.py:81
+#: ui/search_panel.py:116
+msgid "Angezeigte Liste exportieren"
+msgstr ""
+
+#: ui/context_actions.py:129
+#: ui/main_window.py:234
+msgid "Angezeigte Liste exportieren …\tCtrl+E"
+msgstr ""
+
+#: ui/main_window.py:565
+msgid "Anmeldung verworfen – Player wird neu angemeldet …"
+msgstr ""
+
+#: ui/config_dialog.py:107
+msgid "Ansagen (Screenreader):"
+msgstr ""
+
+#: ui/queue_panel.py:78
+msgid "Ansicht"
+msgstr ""
+
+#: ui/browse_panel.py:74
+#: ui/search_panel.py:109
+msgid "Ansicht neu laden"
+msgstr ""
+
+#: ui/browse_panel.py:77
+#: ui/queue_panel.py:63
+msgid "Anwendungstaste, Umschalt+F10"
+msgstr ""
+
+#: ui/log_dialog.py:30
+msgid "Art"
+msgstr ""
+
+#: config.py:43
+msgid "Aus (nur der gewählte Titel)"
+msgstr ""
+
+#: ui/playlist_edit.py:87
+msgid "Aus Playlist entfernen"
+msgstr ""
+
+#: config.py:28
+msgid "Ausführlich (auch Zwischenmeldungen)"
+msgstr ""
+
+#: ui/config_dialog.py:117
+msgid "Ausführlich sagt auch Zwischenmeldungen wie „Lade Alben …“ an; Kurz sagt nur Ergebnisse und Fehler an (die Statusleiste zeigt weiterhin alles)."
+msgstr ""
+
+#: ui/panel_helpers.py:347
+msgid "Auswahl"
+msgstr ""
+
+#: ui/downloads_dialog.py:38
+msgid "Auswahl abbrechen"
+msgstr ""
+
+#: ui/config_dialog.py:75
+msgid "Autoplay:"
+msgstr ""
+
+#: ui/main_window.py:259
+msgid "Autorisieren..."
+msgstr ""
+
+#: ui/main_window.py:259
+msgid "Autorisiert die App bei Spotify"
+msgstr ""
+
+#: ui/main_window.py:517
+msgid "Autorisierung erfolgreich!"
+msgstr ""
+
+#: ui/main_window.py:519
+msgid "Autorisierung fehlgeschlagen."
+msgstr ""
+
+#: ui/main_window.py:509
+msgid "Autorisierung im Browser läuft..."
+msgstr ""
+
+#: ui/main_window.py:150
+msgid "Bearbeiten"
+msgstr ""
+
+#: ui/config_dialog.py:194
+msgid "Beispiel: %artist%/%album%/%num,2% - %title%"
+msgstr ""
+
+#: ui/browse_common.py:179
+#: ui/browse_common.py:194
+msgid "Beliebte Titel"
+msgstr ""
+
+#: ui/log_dialog.py:31
+#: ui/shortcuts.py:103
+msgid "Bereich"
+msgstr ""
+
+#: ui/playlist_edit.py:140
+msgid "Beschreibung der Playlist"
+msgstr ""
+
+#: ui/playlist_edit.py:138
+msgid "Beschreibung:"
+msgstr ""
+
+#: ui/config_dialog.py:165
+msgid "Bitrate für Downloads über spotdl"
+msgstr ""
+
+#: ui/config_dialog.py:56
+msgid "Bitrate für lokale Wiedergabe über librespot"
+msgstr ""
+
+#: ui/config_dialog.py:220
+msgid "Bitte Client-ID und Client-Secret gemeinsam ausfüllen."
+msgstr ""
+
+#: ui/config_dialog.py:226
+msgid "Bitte eine Download-Ordnerstruktur eintragen."
+msgstr ""
+
+#: ui/config_dialog.py:223
+msgid "Bitte einen Download-Ordner auswählen."
+msgstr ""
+
+#: spotify_client.py:831
+msgid "Bitte einen Namen für die Playlist eingeben."
+msgstr ""
+
+#: ui/main_window.py:501
+msgid "Bitte zuerst Spotify API konfigurieren!\nMenü: Bearbeiten > Einstellungen"
+msgstr ""
+
+#: main.py:32
+msgid "Bitte zuerst Spotify API konfigurieren: Bearbeiten > Einstellungen"
+msgstr ""
+
+#: ui/context_actions.py:400
+msgid "Buchstaben eingeben, um die Playlist zu finden"
+msgstr ""
+
+#: ui/list_io.py:31
+msgid "CSV-Datei (*.csv)|*.csv|M3U-Playlist (*.m3u8)|*.m3u8|Textdatei (*.txt)|*.txt"
+msgstr ""
+
+#: ui/config_dialog.py:29
+msgid "Client-ID:"
+msgstr ""
+
+#: ui/config_dialog.py:38
+msgid "Client-Secret:"
+msgstr ""
+
+#: ui/config_dialog.py:200
+msgid "Credentials finden Sie unter: https://developer.spotify.com/dashboard"
+msgstr ""
+
+#: ui/log_dialog.py:70
+msgid "Das Protokoll ist leer"
+msgstr ""
+
+#: spotify_client.py:441
+msgid "Das Wiedergabegerät „{device}“ hat den Befehl nicht angenommen.\nPrüfen Sie, ob es noch online ist, oder wählen Sie unter 'Extras > Wiedergabegerät …' ein anderes Gerät."
+msgstr ""
+
+#: spotify_client.py:337
+msgid "Das Wiedergabegerät „{name}“ ist gerade nicht verfügbar.\nSchalten Sie es ein oder wählen Sie unter 'Extras > Wiedergabegerät …' ein anderes Gerät."
+msgstr ""
+
+#: ui/list_io.py:138
+msgid "Datei konnte nicht gelesen werden: {short_error}"
+msgstr ""
+
+#: ui/config_dialog.py:149
+msgid "Dateiformat für Downloads über librespot. OGG ist der unveränderte Spotify-Stream; MP3 und M4A werden per ffmpeg umgewandelt (ffmpeg muss installiert sein)."
+msgstr ""
+
+#: ui/panel_helpers.py:35
+msgid "Datum (neueste zuerst)"
+msgstr ""
+
+#: ui/list_io.py:80
+msgid "Dauer"
+msgstr ""
+
+#: ui/panel_helpers.py:34
+msgid "Dauer (kurz zuerst)"
+msgstr ""
+
+#: ui/playlist_edit.py:190
+msgid "Der Name darf nicht leer sein – nichts geändert."
+msgstr ""
+
+#: spotify_client.py:788
+msgid "Der Name der Playlist darf nicht leer sein."
+msgstr ""
+
+#: ui/playlist_edit.py:117
+msgid "Der Titel steht bereits an dieser Stelle."
+msgstr ""
+
+#: ui/playlist_edit.py:109
+msgid "Der Titel steht bereits ganz oben."
+msgstr ""
+
+#: librespot_download.py:180
+msgid "Der Zielpfad für den Download ist zu lang.\nWählen Sie einen kürzeren Download-Ordner oder eine einfachere Namensvorlage (Bearbeiten > Einstellungen)."
+msgstr ""
+
+#: spotify_client.py:290
+msgid "Der lokale Player '{DEVICE_NAME}' wurde gestartet, aber nicht als Spotify-Gerät gefunden.{detail}"
+msgstr ""
+
+#: spotify_client.py:444
+msgid "Der lokale Spotify-Player ist noch nicht als Gerät verfügbar.\nStarten Sie ihn über 'Extras > Lokalen Player starten' oder versuchen Sie es erneut."
+msgstr ""
+
+#: ui/browse_panel.py:107
+#: ui/queue_panel.py:94
+#: ui/search_panel.py:170
+msgid "Details"
+msgstr ""
+
+#: librespot_download.py:66
+msgid "Die Bibliothek 'librespot' ist nicht installiert.\nInstallieren Sie sie mit: pip install librespot\n\nOder wählen Sie in den Einstellungen die Download-Methode 'YouTube-Quelle (spotdl)'."
+msgstr ""
+
+#: ui/queue_panel.py:240
+msgid "Die Spotify-Warteschlange lässt sich nicht bearbeiten."
+msgstr ""
+
+#: ui/main_window.py:551
+msgid "Die librespot-Anmeldung wird verworfen. Die neue Anmeldung öffnet sich im Browser und gilt für lokale Wiedergabe und Downloads.\n\nFortfahren?"
+msgstr ""
+
+#: librespot_download.py:77
+msgid "Die librespot-Bibliothek passt nicht zur installierten protobuf-Version.\n\nSetzen Sie die Umgebungsvariable PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python, bevor Sie SpotiFlix starten, oder installieren Sie protobuf 3.20:\n  pip install \"protobuf<4\"\n\nAlternativ in den Einstellungen die Download-Methode 'YouTube-Quelle (spotdl)' wählen."
+msgstr ""
+
+#: ui/browse_common.py:195
+msgid "Die meistgehörten Titel"
+msgstr ""
+
+#: ui/list_io.py:44
+msgid "Diese Ansicht enthält nichts zum Exportieren."
+msgstr ""
+
+#: ui/browse_panel.py:323
+#: ui/browse_panel.py:330
+#: ui/browse_panel.py:339
+#: ui/search_panel.py:456
+#: ui/search_panel.py:463
+#: ui/search_panel.py:472
+msgid "Diese Ansicht ist keine bearbeitbare Playlist."
+msgstr ""
+
+#: ui/main_window.py:444
+msgid "Diese Ansicht lässt sich nicht exportieren"
+msgstr ""
+
+#: ui/browse_panel.py:253
+#: ui/search_panel.py:488
+msgid "Diese Ansicht lässt sich nicht neu laden."
+msgstr ""
+
+#: ui/playlist_edit.py:175
+#: ui/playlist_edit.py:57
+msgid "Diese Playlist können Sie nicht bearbeiten."
+msgstr ""
+
+#: ui/main_window.py:412
+msgid "Dieser Schnellzugriff lässt sich nicht öffnen"
+msgstr ""
+
+#: ui/playlist_edit.py:105
+msgid "Dieser Titel lässt sich nicht verschieben."
+msgstr ""
+
+#: ui/context_actions.py:264
+msgid "Dieses Element kann nicht in der Mediathek gespeichert werden."
+msgstr ""
+
+#: ui/context_actions.py:183
+msgid "Dieses Element kann nicht in die Warteschlange."
+msgstr ""
+
+#: ui/context_actions.py:315
+msgid "Dieses Element kann nicht zu einer Playlist hinzugefügt werden."
+msgstr ""
+
+#: ui/context_actions.py:293
+msgid "Dieses Element lässt sich nicht als Schnellzugriff merken."
+msgstr ""
+
+#: download_manager.py:326
+msgid "Download abgebrochen."
+msgstr ""
+
+#: ui/main_window.py:744
+msgid "Download abgeschlossen: {name}"
+msgstr ""
+
+#: ui/panel_helpers.py:346
+msgid "Download eingereiht: {name}"
+msgstr ""
+
+#: download_manager.py:341
+#: librespot_download.py:660
+msgid "Download fehlgeschlagen."
+msgstr ""
+
+#: ui/main_window.py:748
+msgid "Download fehlgeschlagen: {name} – {error}"
+msgstr ""
+
+#: librespot_download.py:575
+msgid "Download für Typ '{item_type}' wird nicht unterstützt."
+msgstr ""
+
+#: ui/config_dialog.py:139
+msgid "Download-Format (librespot):"
+msgstr ""
+
+#: ui/config_dialog.py:123
+msgid "Download-Methode:"
+msgstr ""
+
+#: ui/config_dialog.py:184
+msgid "Download-Ordner auswählen"
+msgstr ""
+
+#: ui/main_window.py:777
+msgid "Download-Ordner geöffnet: {target}"
+msgstr ""
+
+#: ui/main_window.py:779
+msgid "Download-Ordner konnte nicht geöffnet werden"
+msgstr ""
+
+#: ui/main_window.py:230
+msgid "Download-Ordner öffnen"
+msgstr ""
+
+#: ui/config_dialog.py:180
+msgid "Download-Ordner:"
+msgstr ""
+
+#: ui/config_dialog.py:191
+msgid "Download-Ordnerstruktur:"
+msgstr ""
+
+#: ui/main_window.py:766
+msgid "Download: "
+msgstr ""
+
+#: ui/config_dialog.py:156
+msgid "Downloadqualität:"
+msgstr ""
+
+#: ui/downloads_dialog.py:31
+#: ui/downloads_dialog.py:24
+msgid "Downloads"
+msgstr ""
+
+#: ui/main_window.py:227
+msgid "Downloads …\tCtrl+Shift+L"
+msgstr ""
+
+#: ui/downloads_dialog.py:79
+msgid "Downloads, {count} Aufträge"
+msgstr ""
+
+#: ui/main_window.py:766
+msgid "Downloads: "
+msgstr ""
+
+#: config.py:49
+msgid "Echter Spotify-Stream (librespot)"
+msgstr ""
+
+#: ui/main_window.py:948
+msgid "Ein barrierefreier wxPython-Player für Spotify\nSprachausgabe: {output_name}"
+msgstr ""
+
+#: ui/browse_panel.py:71
+msgid "Eine Ebene zurück"
+msgstr ""
+
+#: ui/browse_panel.py:70
+#: ui/queue_panel.py:57
+#: ui/search_panel.py:105
+msgid "Eingabe"
+msgstr ""
+
+#: ui/main_window.py:630
+msgid "Einschlaf-Timer"
+msgstr ""
+
+#: ui/main_window.py:655
+msgid "Einschlaf-Timer abgelaufen – Wiedergabe pausiert"
+msgstr ""
+
+#: ui/main_window.py:640
+msgid "Einschlaf-Timer aus"
+msgstr ""
+
+#: ui/main_window.py:193
+msgid "Einschlaf-Timer …\tCtrl+Shift+E"
+msgstr ""
+
+#: ui/main_window.py:644
+msgid "Einschlaf-Timer: Wiedergabe pausiert in {minutes} Minuten"
+msgstr ""
+
+#: ui/config_dialog.py:16
+msgid "Einstellungen"
+msgstr ""
+
+#: ui/main_window.py:487
+msgid "Einstellungen gespeichert"
+msgstr ""
+
+#: ui/main_window.py:492
+msgid "Einstellungen gespeichert!"
+msgstr ""
+
+#: ui/main_window.py:483
+msgid "Einstellungen gespeichert. Lokaler Player wurde für die neuen Wiedergabeeinstellungen gestoppt."
+msgstr ""
+
+#: ui/main_window.py:147
+msgid "Einstellungen...\tCtrl+,"
+msgstr ""
+
+#: ui/main_window.py:389
+msgid "Eintrag"
+msgstr ""
+
+#: ui/browse_panel.py:70
+msgid "Eintrag öffnen bzw. abspielen"
+msgstr ""
+
+#: ui/discover_panel.py:17
+#: ui/main_window.py:113
+msgid "Entdecken"
+msgstr ""
+
+#: ui/main_window.py:157
+msgid "Entdecken\tCtrl+4"
+msgstr ""
+
+#: ui/browse_panel.py:78
+#: ui/queue_panel.py:59
+#: ui/search_panel.py:113
+msgid "Entf"
+msgstr ""
+
+#: ui/queue_panel.py:105
+msgid "Entfernen (Entf)"
+msgstr ""
+
+#: ui/playlist_edit.py:88
+msgid "Entfernen abgebrochen"
+msgstr ""
+
+#: ui/main_window.py:162
+msgid "Entfernt gespeicherte Schnellzugriffe"
+msgstr ""
+
+#: ui/search_panel.py:94
+msgid "Episode: "
+msgstr ""
+
+#: ui/main_window.py:492
+#: ui/main_window.py:517
+msgid "Erfolg"
+msgstr ""
+
+#: ui/main_window.py:516
+msgid "Erfolgreich mit Spotify verbunden!"
+msgstr ""
+
+#: ui/downloads_dialog.py:44
+msgid "Erledigte entfernen"
+msgstr ""
+
+#: ui/log_dialog.py:84
+msgid "Es gibt noch keine Protokolldatei"
+msgstr ""
+
+#: ui/main_window.py:845
+msgid "Es läuft gerade nichts zum Spulen"
+msgstr ""
+
+#: ui/main_window.py:421
+msgid "Es sind keine Schnellzugriffe gespeichert"
+msgstr ""
+
+#: ui/context_actions.py:300
+msgid "Es sind schon {MAX_BOOKMARKS} Schnellzugriffe belegt – bitte zuerst einen entfernen (Extras > Schnellzugriffe)."
+msgstr ""
+
+#: ui/main_window.py:66
+msgid "Es wird gerade nichts abgespielt."
+msgstr ""
+
+#: ui/context_actions.py:341
+msgid "Es wurden keine bearbeitbaren Playlists gefunden.\nLegen Sie zuerst eine eigene Playlist in Spotify an."
+msgstr ""
+
+#: ui/browse_panel.py:73
+#: ui/search_panel.py:108
+msgid "Esc"
+msgstr ""
+
+#: ui/list_io.py:56
+msgid "Export abgebrochen"
+msgstr ""
+
+#: ui/list_io.py:68
+msgid "Export fehlgeschlagen: {short_error}"
+msgstr ""
+
+#: ui/list_io.py:69
+msgid "Export-Fehler"
+msgstr ""
+
+#: ui/main_window.py:244
+msgid "Extras"
+msgstr ""
+
+#: ui/browse_panel.py:80
+#: ui/search_panel.py:115
+msgid "F2"
+msgstr ""
+
+#: ui/browse_panel.py:74
+#: ui/queue_panel.py:62
+#: ui/search_panel.py:109
+msgid "F5"
+msgstr ""
+
+#: ui/browse_panel.py:278
+#: ui/config_dialog.py:220
+#: ui/config_dialog.py:223
+#: ui/config_dialog.py:226
+#: ui/context_actions.py:191
+#: ui/context_actions.py:328
+#: ui/context_actions.py:365
+#: ui/main_window.py:494
+#: ui/main_window.py:520
+#: ui/main_window.py:522
+#: ui/main_window.py:596
+#: ui/main_window.py:786
+#: ui/panel_helpers.py:244
+#: ui/queue_panel.py:309
+#: ui/search_panel.py:595
+#: ui/search_panel.py:216
+#: ui/search_panel.py:559
+#: ui/search_panel.py:258
+msgid "Fehler"
+msgstr ""
+
+#: ui/main_window.py:520
+msgid "Fehler bei der Autorisierung."
+msgstr ""
+
+#: librespot_download.py:665
+msgid "Fehler bei:"
+msgstr ""
+
+#: ui/main_window.py:494
+msgid "Fehler beim Speichern der Einstellungen."
+msgstr ""
+
+#: ui/browse_panel.py:276
+#: ui/browse_panel.py:278
+#: ui/search_panel.py:594
+#: ui/search_panel.py:595
+msgid "Fehler: {error}"
+msgstr ""
+
+#: ui/main_window.py:522
+#: ui/search_panel.py:258
+msgid "Fehler: {value}"
+msgstr ""
+
+#: ui/downloads_dialog.py:42
+msgid "Fehlgeschlagene wiederholen"
+msgstr ""
+
+#: ui/browse_panel.py:297
+#: ui/search_panel.py:369
+msgid "Filter"
+msgstr ""
+
+#: ui/browse_panel.py:73
+#: ui/search_panel.py:108
+msgid "Filter aufheben"
+msgstr ""
+
+#: ui/browse_panel.py:310
+msgid "Filter „{text}“: {count} von {count2} Einträgen"
+msgstr ""
+
+#: ui/search_panel.py:380
+msgid "Filter „{text}“: {count} von {count2} Treffern"
+msgstr ""
+
+#: ui/downloads_dialog.py:34
+msgid "Fortschritt"
+msgstr ""
+
+#: ui/search_panel.py:112
+msgid "Frühere Suchbegriffe"
+msgstr ""
+
+#: ui/shortcuts.py:105
+msgid "Funktion"
+msgstr ""
+
+#: ui/context_actions.py:359
+msgid "Füge zu Playlist hinzu: {playlist_name}"
+msgstr ""
+
+#: ui/context_actions.py:220
+msgid "Füge zur Warteschlange hinzu: {name}"
+msgstr ""
+
+#: librespot_download.py:336
+msgid "Für MP3-/M4A-Downloads wird 'ffmpeg' benötigt, es wurde aber nicht gefunden.\nInstallieren Sie ffmpeg und stellen Sie sicher, dass es im PATH liegt, oder wählen Sie in den Einstellungen das Download-Format 'OGG Vorbis'."
+msgstr ""
+
+#: librespot_manager.py:118
+msgid "Für den lokalen Player fehlt die librespot-Anmeldung.\nSie öffnet sich einmalig im Browser – bitte dort bestätigen und den Player erneut starten."
+msgstr ""
+
+#: download_manager.py:282
+msgid "Für dieses Element ist kein Spotify-Link verfügbar."
+msgstr ""
+
+#: ui/config_dialog.py:23
+msgid "Geben Sie Ihre Spotify API-Credentials ein:\nDiese werden sicher im System-Schlüsselspeicher gespeichert."
+msgstr ""
+
+#: ui/search_panel.py:212
+msgid "Geben Sie einen Suchbegriff ein"
+msgstr ""
+
+#: ui/main_window.py:609
+msgid "Gerät"
+msgstr ""
+
+#: ui/main_window.py:595
+msgid "Geräte konnten nicht geladen werden: {value}"
+msgstr ""
+
+#: ui/library_panel.py:22
+msgid "Gespeicherte Alben"
+msgstr ""
+
+#: ui/library_panel.py:23
+msgid "Gespeicherte Titel"
+msgstr ""
+
+#: ui/config_dialog.py:63
+msgid "Gleicht Lautstärkeunterschiede zwischen Alben aus (librespot). Die Änderung greift, sobald der lokale Player neu startet."
+msgstr ""
+
+#: ui/config_dialog.py:173
+msgid "Gleichzeitige Downloads"
+msgstr ""
+
+#: ui/config_dialog.py:169
+msgid "Gleichzeitige Downloads:"
+msgstr ""
+
+#: ui/context_actions.py:100
+msgid "Herunterladen{count}"
+msgstr ""
+
+#: ui/main_window.py:261
+msgid "Hilfe"
+msgstr ""
+
+#: ui/context_actions.py:419
+msgid "Hinzufügen"
+msgstr ""
+
+#: config.py:61
+msgid "Hoch (320 kbit/s)"
+msgstr ""
+
+#: ui/search_panel.py:163
+msgid "Holt die nächsten Treffer zur laufenden Suche"
+msgstr ""
+
+#: ui/config_dialog.py:40
+msgid "Ihr Spotify Client-Secret vom Developer Dashboard"
+msgstr ""
+
+#: ui/config_dialog.py:31
+msgid "Ihre Spotify Client-ID vom Developer Dashboard"
+msgstr ""
+
+#: ui/discover_panel.py:21
+msgid "Ihre Top-Künstler"
+msgstr ""
+
+#: ui/discover_panel.py:22
+msgid "Ihre Top-Titel"
+msgstr ""
+
+#: ui/library_panel.py:20
+msgid "Ihre gespeicherten und abonnierten Playlists"
+msgstr ""
+
+#: ui/discover_panel.py:24
+msgid "Ihre zuletzt gespielten Titel"
+msgstr ""
+
+#: config.py:45
+msgid "Immer weiterspielen"
+msgstr ""
+
+#: ui/list_io.py:129
+#: ui/list_io.py:161
+msgid "Import abgebrochen"
+msgstr ""
+
+#: ui/list_io.py:173
+msgid "Import fehlgeschlagen: {short_error}"
+msgstr ""
+
+#: ui/list_io.py:174
+msgid "Import-Fehler"
+msgstr ""
+
+#: ui/list_io.py:169
+msgid "Importiert mit SpotiFlix"
+msgstr ""
+
+#: ui/context_actions.py:41
+msgid "In Mediathek speichern / entfernen"
+msgstr ""
+
+#: ui/main_window.py:190
+msgid "In Mediathek speichern / entfernen\tCtrl+S"
+msgstr ""
+
+#: config.py:44
+msgid "In Playlist/Album fortsetzen"
+msgstr ""
+
+#: ui/log_dialog.py:36
+msgid "In Zwischenablage"
+msgstr ""
+
+#: ui/list_io.py:143
+msgid "In der Datei wurden keine Spotify-URIs oder -Links gefunden.\nErwartet werden Einträge wie spotify:track:… oder open.spotify.com/track/…"
+msgstr ""
+
+#: ui/list_io.py:141
+msgid "In dieser Datei stehen keine Spotify-Titel."
+msgstr ""
+
+#: ui/search_panel.py:212
+msgid "Info"
+msgstr ""
+
+#: ui/main_window.py:260
+msgid "Informationen über diese App"
+msgstr ""
+
+#: ui/main_window.py:916
+msgid "Kein Eintrag ausgewählt"
+msgstr ""
+
+#: librespot_download.py:522
+#: librespot_download.py:527
+#: ui/panel_helpers.py:244
+msgid "Kein Spotify-URI für dieses Element verfügbar."
+msgstr ""
+
+#: ui/main_window.py:900
+#: ui/main_window.py:908
+msgid "Kein Titel ausgewählt"
+msgstr ""
+
+#: ui/downloads_dialog.py:128
+msgid "Keine Downloads vorhanden"
+msgstr ""
+
+#: ui/context_actions.py:495
+msgid "Keine Playlist ausgewählt – Filter anpassen"
+msgstr ""
+
+#: ui/context_actions.py:343
+msgid "Keine Playlists"
+msgstr ""
+
+#: librespot_download.py:537
+msgid "Keine Spotify-ID für dieses Element verfügbar."
+msgstr ""
+
+#: ui/playlist_edit.py:80
+msgid "Keine Titel zum Entfernen ausgewählt."
+msgstr ""
+
+#: ui/context_actions.py:195
+#: ui/context_actions.py:369
+msgid "Keine Titel zum Hinzufügen gefunden."
+msgstr ""
+
+#: ui/context_actions.py:339
+msgid "Keine bearbeitbaren Playlists gefunden."
+msgstr ""
+
+#: ui/downloads_dialog.py:112
+msgid "Keine fehlgeschlagenen Downloads"
+msgstr ""
+
+#: librespot_download.py:627
+msgid "Keine herunterladbaren Titel gefunden."
+msgstr ""
+
+#: ui/context_actions.py:489
+msgid "Keine passende Playlist"
+msgstr ""
+
+#: ui/search_panel.py:604
+msgid "Keine vorherige Ansicht"
+msgstr ""
+
+#: ui/main_window.py:118
+msgid "Klicken Sie auf 'Hilfe > Autorisieren', um sich mit Spotify zu verbinden"
+msgstr ""
+
+#: ui/main_window.py:503
+msgid "Konfiguration erforderlich"
+msgstr ""
+
+#: ui/main_window.py:148
+msgid "Konfiguriert Spotify API-Credentials und Download-Ordner"
+msgstr ""
+
+#: ui/browse_panel.py:77
+msgid "Kontextmenü zum markierten Eintrag"
+msgstr ""
+
+#: ui/queue_panel.py:63
+msgid "Kontextmenü zum markierten Titel"
+msgstr ""
+
+#: ui/main_window.py:382
+msgid "Kontextmenü: „Als Schnellzugriff merken"
+msgstr ""
+
+#: config.py:29
+msgid "Kurz (nur Ergebnisse)"
+msgstr ""
+
+#: ui/browse_panel.py:434
+#: ui/library_panel.py:21
+#: ui/list_io.py:80
+#: ui/main_window.py:386
+#: ui/search_panel.py:77
+msgid "Künstler"
+msgstr ""
+
+#: ui/panel_helpers.py:32
+msgid "Künstler A–Z"
+msgstr ""
+
+#: ui/context_actions.py:37
+msgid "Künstler folgen / nicht mehr folgen"
+msgstr ""
+
+#: ui/discover_panel.py:21
+msgid "Künstler passend zu Ihrem Hörverlauf"
+msgstr ""
+
+#: ui/context_actions.py:92
+msgid "Künstler öffnen"
+msgstr ""
+
+#: ui/search_panel.py:96
+msgid "Künstler: "
+msgstr ""
+
+#: ui/shortcuts.py:104
+msgid "Kürzel"
+msgstr ""
+
+#: ui/shortcuts.py:97
+msgid "Kürzel suchen"
+msgstr ""
+
+#: ui/playlist_edit.py:164
+msgid "Lade Playlist-Daten …"
+msgstr ""
+
+#: ui/context_actions.py:321
+msgid "Lade Playlists …"
+msgstr ""
+
+#: ui/queue_panel.py:200
+msgid "Lade Spotify-Warteschlange …"
+msgstr ""
+
+#: ui/main_window.py:589
+msgid "Lade Wiedergabegeräte …"
+msgstr ""
+
+#: ui/search_panel.py:234
+msgid "Lade weitere Treffer …"
+msgstr ""
+
+#: ui/browse_panel.py:243
+#: ui/search_panel.py:566
+msgid "Lade {title} …"
+msgstr ""
+
+#: ui/main_window.py:862
+msgid "Lauter"
+msgstr ""
+
+#: ui/main_window.py:180
+msgid "Lauter\tCtrl++"
+msgstr ""
+
+#: ui/config_dialog.py:60
+msgid "Lautstärke normalisieren"
+msgstr ""
+
+#: ui/main_window.py:791
+msgid "Lautstärke {result} Prozent"
+msgstr ""
+
+#: ui/config_dialog.py:71
+msgid "Lautstärke, mit der der lokale Player startet"
+msgstr ""
+
+#: ui/log_dialog.py:40
+#: ui/queue_panel.py:107
+msgid "Leeren"
+msgstr ""
+
+#: ui/main_window.py:238
+msgid "Legt aus den Spotify-Links einer Datei eine neue Playlist an"
+msgstr ""
+
+#: ui/context_actions.py:414
+msgid "Legt eine neue, private Playlist in Ihrem Spotify-Konto an"
+msgstr ""
+
+#: ui/main_window.py:865
+msgid "Leiser"
+msgstr ""
+
+#: ui/main_window.py:181
+msgid "Leiser\tCtrl+-"
+msgstr ""
+
+#: ui/queue_panel.py:61
+msgid "Liste exportieren"
+msgstr ""
+
+#: ui/browse_panel.py:72
+msgid "Liste filtern"
+msgstr ""
+
+#: ui/browse_panel.py:297
+msgid "Liste filtern (leer = alle anzeigen):"
+msgstr ""
+
+#: ui/main_window.py:219
+#: ui/main_window.py:554
+msgid "Lokalen Player neu anmelden"
+msgstr ""
+
+#: ui/main_window.py:212
+msgid "Lokalen Player starten"
+msgstr ""
+
+#: ui/main_window.py:215
+msgid "Lokalen Player stoppen"
+msgstr ""
+
+#: ui/main_window.py:584
+msgid "Lokaler Player gestoppt"
+msgstr ""
+
+#: ui/main_window.py:534
+msgid "Lokaler Player läuft – bereit zur Wiedergabe"
+msgstr ""
+
+#: ui/main_window.py:571
+msgid "Lokaler Player neu angemeldet und bereit"
+msgstr ""
+
+#: ui/main_window.py:528
+msgid "Lokaler Player wird gestartet..."
+msgstr ""
+
+#: ui/main_window.py:604
+msgid "Lokaler SpotiFlix-Player (Standard)"
+msgstr ""
+
+#: ui/queue_panel.py:224
+msgid "Läuft gerade"
+msgstr ""
+
+#: config.py:56
+msgid "M4A (AAC)"
+msgstr ""
+
+#: ui/browse_panel.py:78
+#: ui/search_panel.py:113
+msgid "Markierte Titel aus der geöffneten Playlist entfernen"
+msgstr ""
+
+#: ui/queue_panel.py:59
+msgid "Markierte Titel entfernen"
+msgstr ""
+
+#: ui/library_panel.py:17
+#: ui/main_window.py:107
+msgid "Mediathek"
+msgstr ""
+
+#: ui/main_window.py:154
+msgid "Mediathek\tCtrl+1"
+msgstr ""
+
+#: ui/context_actions.py:286
+msgid "Mediathek wird aktualisiert: {name}"
+msgstr ""
+
+#: ui/context_actions.py:284
+msgid "Mediathek-Fehler"
+msgstr ""
+
+#: ui/context_actions.py:283
+msgid "Mediathek-Fehler: {short_error}"
+msgstr ""
+
+#: ui/main_window.py:355
+msgid "Medientaste {name}"
+msgstr ""
+
+#: ui/shortcuts.py:72
+msgid "Medientasten"
+msgstr ""
+
+#: ui/search_panel.py:160
+msgid "Mehr laden"
+msgstr ""
+
+#: ui/browse_panel.py:76
+msgid "Mehrere Einträge markieren"
+msgstr ""
+
+#: ui/search_panel.py:111
+msgid "Mehrere Treffer markieren"
+msgstr ""
+
+#: ui/queue_panel.py:52
+msgid "Meine Liste"
+msgstr ""
+
+#: ui/log_dialog.py:32
+msgid "Meldung"
+msgstr ""
+
+#: ui/queue_panel.py:101
+msgid "Nach oben (Strg+Hoch)"
+msgstr ""
+
+#: ui/queue_panel.py:103
+msgid "Nach unten (Strg+Runter)"
+msgstr ""
+
+#: ui/browse_panel.py:106
+#: ui/search_panel.py:169
+msgid "Name"
+msgstr ""
+
+#: ui/panel_helpers.py:31
+msgid "Name A–Z"
+msgstr ""
+
+#: ui/playlist_edit.py:135
+msgid "Name der Playlist"
+msgstr ""
+
+#: ui/context_actions.py:434
+msgid "Name der neuen Playlist:"
+msgstr ""
+
+#: ui/playlist_edit.py:133
+msgid "Name:"
+msgstr ""
+
+#: ui/main_window.py:164
+msgid "Navigation"
+msgstr ""
+
+#: ui/main_window.py:557
+msgid "Neuanmeldung abgebrochen"
+msgstr ""
+
+#: ui/main_window.py:574
+msgid "Neuanmeldung fehlgeschlagen: {short_error}"
+msgstr ""
+
+#: ui/discover_panel.py:20
+msgid "Neue Alben"
+msgstr ""
+
+#: ui/main_window.py:369
+msgid "Neue Berechtigungen nötig – bitte 'Hilfe > Autorisieren' erneut ausführen."
+msgstr ""
+
+#: ui/context_actions.py:434
+msgid "Neue Playlist"
+msgstr ""
+
+#: ui/context_actions.py:413
+msgid "Neue Playlist …"
+msgstr ""
+
+#: ui/discover_panel.py:23
+msgid "Neues von Top-Künstlern"
+msgstr ""
+
+#: ui/playlist_edit.py:193
+msgid "Nichts geändert"
+msgstr ""
+
+#: ui/list_io.py:145
+msgid "Nichts zu importieren"
+msgstr ""
+
+#: ui/downloads_dialog.py:101
+msgid "Nichts zum Abbrechen ausgewählt"
+msgstr ""
+
+#: config.py:59
+msgid "Niedrig (96 kbit/s)"
+msgstr ""
+
+#: ui/main_window.py:382
+msgid "Noch keine gespeichert"
+msgstr ""
+
+#: config.py:60
+msgid "Normal (160 kbit/s)"
+msgstr ""
+
+#: ui/main_window.py:349
+#: ui/main_window.py:856
+msgid "Nächster Titel"
+msgstr ""
+
+#: ui/main_window.py:176
+msgid "Nächster Titel\tCtrl+N"
+msgstr ""
+
+#: config.py:54
+msgid "OGG Vorbis (Original)"
+msgstr ""
+
+#: ui/log_dialog.py:82
+msgid "Ordner mit {LOG_FILE} geöffnet"
+msgstr ""
+
+#: ui/browse_common.py:219
+msgid "Passende Playlists"
+msgstr ""
+
+#: ui/search_panel.py:112
+msgid "Pfeil hoch/runter im Suchfeld"
+msgstr ""
+
+#: ui/main_window.py:853
+msgid "Play/Pause"
+msgstr ""
+
+#: ui/main_window.py:175
+msgid "Play/Pause\tCtrl+P"
+msgstr ""
+
+#: ui/main_window.py:540
+#: ui/main_window.py:575
+msgid "Player-Fehler"
+msgstr ""
+
+#: ui/main_window.py:538
+msgid "Player-Fehler: {short_error}"
+msgstr ""
+
+#: ui/main_window.py:387
+msgid "Playlist"
+msgstr ""
+
+#: ui/context_actions.py:396
+msgid "Playlist (tippen zum Filtern):"
+msgstr ""
+
+#: ui/main_window.py:237
+msgid "Playlist aus Datei importieren …\tCtrl+Shift+I"
+msgstr ""
+
+#: ui/context_actions.py:388
+msgid "Playlist auswählen"
+msgstr ""
+
+#: ui/playlist_edit.py:129
+msgid "Playlist bearbeiten"
+msgstr ""
+
+#: ui/playlist_edit.py:198
+msgid "Playlist gespeichert: {name}"
+msgstr ""
+
+#: ui/list_io.py:154
+msgid "Playlist importieren"
+msgstr ""
+
+#: ui/playlist_edit.py:172
+msgid "Playlist konnte nicht geladen werden: {short_error}"
+msgstr ""
+
+#: ui/context_actions.py:38
+msgid "Playlist speichern / entfernen"
+msgstr ""
+
+#: ui/browse_panel.py:80
+#: ui/search_panel.py:115
+msgid "Playlist umbenennen und Beschreibung bearbeiten"
+msgstr ""
+
+#: ui/context_actions.py:442
+msgid "Playlist wird angelegt: {name}"
+msgstr ""
+
+#: ui/context_actions.py:471
+msgid "Playlist {name} angelegt und ausgewählt"
+msgstr ""
+
+#: ui/list_io.py:177
+msgid "Playlist {name} mit {added} Titeln angelegt"
+msgstr ""
+
+#: ui/list_io.py:164
+msgid "Playlist {name} wird angelegt …"
+msgstr ""
+
+#: ui/context_actions.py:94
+msgid "Playlist öffnen"
+msgstr ""
+
+#: ui/context_actions.py:379
+#: ui/context_actions.py:449
+msgid "Playlist-Fehler"
+msgstr ""
+
+#: ui/search_panel.py:97
+msgid "Playlist: "
+msgstr ""
+
+#: ui/browse_common.py:182
+#: ui/browse_common.py:218
+#: ui/context_actions.py:409
+#: ui/library_panel.py:20
+#: ui/search_panel.py:75
+msgid "Playlists"
+msgstr ""
+
+#: ui/context_actions.py:329
+msgid "Playlists konnten nicht geladen werden: {short_error}"
+msgstr ""
+
+#: ui/main_window.py:387
+msgid "Podcast"
+msgstr ""
+
+#: ui/context_actions.py:39
+msgid "Podcast abonnieren / abbestellen"
+msgstr ""
+
+#: ui/context_actions.py:248
+msgid "Podcast {name} abbestellt"
+msgstr ""
+
+#: ui/context_actions.py:247
+msgid "Podcast {name} abonniert"
+msgstr ""
+
+#: ui/context_actions.py:96
+msgid "Podcast öffnen"
+msgstr ""
+
+#: ui/search_panel.py:98
+msgid "Podcast: "
+msgstr ""
+
+#: ui/search_panel.py:78
+msgid "Podcasts"
+msgstr ""
+
+#: spotify_client.py:411
+msgid "Podcasts lassen sich nicht direkt abspielen.\nÖffnen Sie den Podcast mit Enter und wählen Sie eine Episode."
+msgstr ""
+
+#: ui/log_dialog.py:28
+#: ui/log_dialog.py:22
+msgid "Protokoll"
+msgstr ""
+
+#: ui/log_dialog.py:89
+msgid "Protokoll geleert"
+msgstr ""
+
+#: ui/log_dialog.py:75
+msgid "Protokoll in die Zwischenablage kopiert"
+msgstr ""
+
+#: ui/log_dialog.py:96
+msgid "Protokoll ist leer"
+msgstr ""
+
+#: ui/main_window.py:242
+msgid "Protokoll …\tCtrl+Shift+G"
+msgstr ""
+
+#: ui/log_dialog.py:63
+msgid "Protokoll, {count} Einträge"
+msgstr ""
+
+#: ui/log_dialog.py:95
+msgid "Protokoll: {count} Einträge"
+msgstr ""
+
+#: ui/log_dialog.py:38
+msgid "Protokolldatei öffnen"
+msgstr ""
+
+#: ui/browse_panel.py:71
+#: ui/search_panel.py:106
+msgid "Rücktaste, Alt+Pfeil links, Esc"
+msgstr ""
+
+#: ui/downloads_dialog.py:50
+#: ui/log_dialog.py:46
+#: ui/shortcuts.py:108
+msgid "Schließen"
+msgstr ""
+
+#: ui/main_window.py:399
+msgid "Schnellzugriff {index} ist nicht belegt"
+msgstr ""
+
+#: ui/main_window.py:414
+msgid "Schnellzugriff {index}: {name}"
+msgstr ""
+
+#: ui/context_actions.py:307
+msgid "Schnellzugriff {slot}: {name} (Strg+Umschalt+{slot})"
+msgstr ""
+
+#: ui/main_window.py:160
+#: ui/main_window.py:425
+msgid "Schnellzugriffe"
+msgstr ""
+
+#: ui/main_window.py:162
+msgid "Schnellzugriffe verwalten …"
+msgstr ""
+
+#: ui/main_window.py:425
+msgid "Schnellzugriffe zum Entfernen auswählen:"
+msgstr ""
+
+#: ui/context_actions.py:243
+msgid "Sie folgen jetzt {name}"
+msgstr ""
+
+#: ui/context_actions.py:244
+msgid "Sie folgen {name} nicht mehr"
+msgstr ""
+
+#: ui/browse_common.py:181
+#: ui/browse_common.py:210
+msgid "Singles & EPs"
+msgstr ""
+
+#: ui/browse_common.py:211
+msgid "Singles und EPs"
+msgstr ""
+
+#: ui/browse_panel.py:141
+#: ui/search_panel.py:149
+msgid "Sortierung"
+msgstr ""
+
+#: ui/browse_panel.py:138
+#: ui/search_panel.py:147
+msgid "Sortierung:"
+msgstr ""
+
+#: ui/browse_panel.py:154
+#: ui/search_panel.py:335
+msgid "Sortierung: {label}"
+msgstr ""
+
+#: ui/config_dialog.py:205
+#: ui/playlist_edit.py:145
+msgid "Speichern"
+msgstr ""
+
+#: ui/main_window.py:234
+msgid "Speichert die aktuelle Liste als CSV oder M3U"
+msgstr ""
+
+#: ui/queue_panel.py:303
+msgid "Spiele Warteschlange ab: {name}"
+msgstr ""
+
+#: ui/search_panel.py:183
+msgid "Spielt den ausgewählten Eintrag direkt ab"
+msgstr ""
+
+#: ui/playlist_edit.py:141
+msgid "Spotify zeigt die Beschreibung unter dem Playlist-Namen an"
+msgstr ""
+
+#: ui/queue_panel.py:52
+#: ui/queue_panel.py:232
+msgid "Spotify-Warteschlange"
+msgstr ""
+
+#: ui/queue_panel.py:62
+msgid "Spotify-Warteschlange neu laden"
+msgstr ""
+
+#: ui/config_dialog.py:92
+msgid "Sprache / Language:"
+msgstr ""
+
+#: ui/config_dialog.py:102
+msgid "Sprache der Oberfläche. Die Änderung wirkt nach einem Neustart."
+msgstr ""
+
+#: ui/main_window.py:490
+msgid "Sprache geändert – bitte SpotiFlix neu starten."
+msgstr ""
+
+#: ui/panel_helpers.py:30
+msgid "Standard (wie geladen)"
+msgstr ""
+
+#: ui/panel_helpers.py:250
+msgid "Starte Wiedergabe: {name}"
+msgstr ""
+
+#: ui/search_panel.py:158
+msgid "Startet die Suche bei Spotify"
+msgstr ""
+
+#: ui/main_window.py:212
+msgid "Startet librespot für lokale Audiowiedergabe"
+msgstr ""
+
+#: ui/config_dialog.py:68
+msgid "Startlautstärke (Prozent):"
+msgstr ""
+
+#: ui/config_dialog.py:70
+msgid "Startlautstärke in Prozent"
+msgstr ""
+
+#: ui/downloads_dialog.py:33
+msgid "Status"
+msgstr ""
+
+#: ui/main_window.py:215
+msgid "Stoppt den librespot-Player"
+msgstr ""
+
+#: ui/browse_panel.py:75
+#: ui/queue_panel.py:60
+#: ui/search_panel.py:110
+msgid "Strg+A"
+msgstr ""
+
+#: ui/browse_panel.py:81
+#: ui/queue_panel.py:61
+#: ui/search_panel.py:116
+msgid "Strg+E"
+msgstr ""
+
+#: ui/browse_panel.py:72
+#: ui/search_panel.py:107
+msgid "Strg+F"
+msgstr ""
+
+#: ui/browse_panel.py:79
+#: ui/queue_panel.py:58
+#: ui/search_panel.py:114
+msgid "Strg+Pfeil hoch/runter"
+msgstr ""
+
+#: ui/search_panel.py:130
+msgid "Suchbegriff"
+msgstr ""
+
+#: ui/search_panel.py:131
+msgid "Suchbegriff eingeben; Pfeiltasten holen frühere Suchen zurück"
+msgstr ""
+
+#: ui/main_window.py:109
+msgid "Suche"
+msgstr ""
+
+#: ui/main_window.py:155
+msgid "Suche\tCtrl+2"
+msgstr ""
+
+#: ui/search_panel.py:259
+msgid "Suche fehlgeschlagen: {short_error}"
+msgstr ""
+
+#: ui/search_panel.py:235
+msgid "Suche nach: {query}"
+msgstr ""
+
+#: ui/search_panel.py:124
+msgid "Suche:"
+msgstr ""
+
+#: ui/search_panel.py:156
+msgid "Suchen"
+msgstr ""
+
+#: ui/shortcuts.py:95
+msgid "Suchen (Kürzel oder Funktion):"
+msgstr ""
+
+#: ui/search_panel.py:173
+msgid "Suchergebnisse"
+msgstr ""
+
+#: ui/search_panel.py:167
+msgid "Suchergebnisse:"
+msgstr ""
+
+#: ui/search_panel.py:300
+msgid "Suchergebnisse: {query}"
+msgstr ""
+
+#: ui/search_panel.py:142
+msgid "Suchtyp"
+msgstr ""
+
+#: ui/search_panel.py:136
+msgid "Suchtyp:"
+msgstr ""
+
+#: ui/shortcuts.py:102
+#: ui/shortcuts.py:89
+msgid "Tastenkürzel"
+msgstr ""
+
+#: ui/main_window.py:257
+msgid "Tastenkürzel …\tF1"
+msgstr ""
+
+#: ui/shortcuts.py:123
+msgid "Tastenkürzel, {count} Einträge"
+msgstr ""
+
+#: ui/shortcuts.py:141
+msgid "Tastenkürzel: {count} Einträge"
+msgstr ""
+
+#: ui/downloads_dialog.py:32
+#: ui/library_panel.py:23
+#: ui/list_io.py:80
+#: ui/main_window.py:54
+#: ui/queue_panel.py:93
+#: ui/search_panel.py:74
+msgid "Titel"
+msgstr ""
+
+#: ui/browse_panel.py:79
+#: ui/search_panel.py:114
+msgid "Titel in der geöffneten Playlist verschieben"
+msgstr ""
+
+#: ui/queue_panel.py:58
+msgid "Titel in „Meine Liste“ verschieben"
+msgstr ""
+
+#: ui/discover_panel.py:22
+msgid "Titel passend zu Ihrem Hörverlauf"
+msgstr ""
+
+#: ui/playlist_edit.py:97
+msgid "Titel werden entfernt …"
+msgstr ""
+
+#: ui/search_panel.py:93
+msgid "Titel: "
+msgstr ""
+
+#: ui/list_io.py:49
+msgid "Titelliste speichern"
+msgstr ""
+
+#: ui/list_io.py:123
+msgid "Titelliste öffnen"
+msgstr ""
+
+#: ui/search_panel.py:72
+msgid "Top-Ergebnisse"
+msgstr ""
+
+#: ui/search_panel.py:105
+msgid "Treffer öffnen bzw. abspielen"
+msgstr ""
+
+#: ui/search_panel.py:107
+msgid "Trefferliste filtern"
+msgstr ""
+
+#: ui/search_panel.py:369
+msgid "Trefferliste filtern (leer = alle anzeigen):"
+msgstr ""
+
+#: ui/browse_panel.py:76
+#: ui/search_panel.py:111
+msgid "Umschalt+Pfeiltasten"
+msgstr ""
+
+#: applog.py:83
+#: applog.py:86
+msgid "Unbekannter Fehler"
+msgstr ""
+
+#: librespot_download.py:368
+msgid "Unbekannter ffmpeg-Fehler"
+msgstr ""
+
+#: ui/main_window.py:220
+msgid "Verwirft die librespot-Anmeldung und meldet sich neu an (Browser)"
+msgstr ""
+
+#: ui/library_panel.py:21
+msgid "Von Ihnen gefolgte Künstler"
+msgstr ""
+
+#: ui/main_window.py:350
+#: ui/main_window.py:859
+msgid "Vorheriger Titel"
+msgstr ""
+
+#: ui/main_window.py:177
+msgid "Vorheriger Titel\tCtrl+B"
+msgstr ""
+
+#: ui/main_window.py:178
+msgid "Vorspulen (10 s)\tCtrl+Shift+Right"
+msgstr ""
+
+#: ui/main_window.py:111
+#: ui/queue_panel.py:92
+#: ui/queue_panel.py:73
+msgid "Warteschlange"
+msgstr ""
+
+#: ui/main_window.py:156
+msgid "Warteschlange\tCtrl+3"
+msgstr ""
+
+#: ui/queue_panel.py:281
+msgid "Warteschlange geleert"
+msgstr ""
+
+#: ui/queue_panel.py:208
+msgid "Warteschlange konnte nicht geladen werden: {short_error}"
+msgstr ""
+
+#: ui/context_actions.py:218
+msgid "Warteschlange-Fehler"
+msgstr ""
+
+#: ui/main_window.py:185
+msgid "Was läuft gerade?\tCtrl+J"
+msgstr ""
+
+#: ui/config_dialog.py:85
+msgid "Was passiert nach einem einzelnen Titel: Aus = nur dieser Titel; In Playlist/Album fortsetzen = der Kontext läuft weiter; Immer weiterspielen = auch einzelne Titel reihen die folgende Liste in die Warteschlange."
+msgstr ""
+
+#: ui/config_dialog.py:175
+msgid "Wie viele Downloads gleichzeitig laufen; der Rest wartet in der Warteschlange."
+msgstr ""
+
+#: ui/main_window.py:194
+msgid "Wiedergabe"
+msgstr ""
+
+#: ui/panel_helpers.py:267
+#: ui/queue_panel.py:316
+msgid "Wiedergabe gestartet: {name}"
+msgstr ""
+
+#: ui/queue_panel.py:310
+msgid "Wiedergabe nicht möglich – zuerst autorisieren"
+msgstr ""
+
+#: ui/main_window.py:351
+msgid "Wiedergabe pausieren"
+msgstr ""
+
+#: ui/main_window.py:630
+msgid "Wiedergabe pausieren nach:"
+msgstr ""
+
+#: ui/main_window.py:850
+msgid "Wiedergabe pausiert"
+msgstr ""
+
+#: ui/main_window.py:348
+msgid "Wiedergabe/Pause"
+msgstr ""
+
+#: ui/main_window.py:806
+#: ui/main_window.py:821
+#: ui/panel_helpers.py:269
+#: ui/queue_panel.py:321
+msgid "Wiedergabefehler"
+msgstr ""
+
+#: ui/main_window.py:615
+msgid "Wiedergabegerät"
+msgstr ""
+
+#: ui/main_window.py:615
+msgid "Wiedergabegerät auswählen:"
+msgstr ""
+
+#: ui/main_window.py:223
+msgid "Wiedergabegerät …\tCtrl+Shift+D"
+msgstr ""
+
+#: ui/main_window.py:622
+msgid "Wiedergabegerät: {name}"
+msgstr ""
+
+#: ui/config_dialog.py:47
+msgid "Wiedergabequalität:"
+msgstr ""
+
+#: ui/main_window.py:184
+msgid "Wiederholung umschalten\tCtrl+Shift+R"
+msgstr ""
+
+#: ui/main_window.py:835
+msgid "Wiederholung {mode}"
+msgstr ""
+
+#: nvda.py:123
+msgid "Windows-Sprachausgabe (SAPI5)"
+msgstr ""
+
+#: ui/main_window.py:223
+msgid "Wählt das Spotify-Connect-Gerät für die Wiedergabe"
+msgstr ""
+
+#: config.py:48
+msgid "YouTube-Quelle (spotdl)"
+msgstr ""
+
+#: ui/main_window.py:257
+msgid "Zeigt alle Tastenkürzel dieser App"
+msgstr ""
+
+#: ui/main_window.py:227
+msgid "Zeigt die Download-Warteschlange und steuert sie"
+msgstr ""
+
+#: ui/main_window.py:242
+msgid "Zeigt gesammelte Fehler und Ereignisse"
+msgstr ""
+
+#: ui/log_dialog.py:29
+msgid "Zeit"
+msgstr ""
+
+#: ui/config_dialog.py:187
+msgid "Zielordner für Downloads über das Kontextmenü"
+msgstr ""
+
+#: ui/main_window.py:188
+msgid "Zu Playlist hinzufügen …\tCtrl+Shift+P"
+msgstr ""
+
+#: ui/context_actions.py:107
+msgid "Zu Playlist hinzufügen …{count}\tCtrl+Shift+P"
+msgstr ""
+
+#: librespot_download.py:518
+#: spotify_client.py:248
+#: spotify_client.py:312
+#: spotify_client.py:359
+#: spotify_client.py:621
+#: spotify_client.py:648
+#: spotify_client.py:665
+#: spotify_client.py:730
+#: spotify_client.py:755
+#: spotify_client.py:783
+#: spotify_client.py:805
+#: spotify_client.py:818
+#: spotify_client.py:828
+#: spotify_client.py:839
+#: spotify_client.py:864
+#: ui/browse_panel.py:170
+#: ui/context_actions.py:191
+#: ui/context_actions.py:272
+#: ui/context_actions.py:365
+#: ui/main_window.py:810
+#: ui/main_window.py:786
+#: ui/queue_panel.py:309
+#: ui/search_panel.py:216
+#: ui/search_panel.py:559
+msgid "Zuerst autorisieren!"
+msgstr ""
+
+#: ui/main_window.py:828
+msgid "Zufallswiedergabe an"
+msgstr ""
+
+#: ui/main_window.py:829
+msgid "Zufallswiedergabe aus"
+msgstr ""
+
+#: ui/main_window.py:183
+msgid "Zufallswiedergabe umschalten\tCtrl+Shift+S"
+msgstr ""
+
+#: ui/discover_panel.py:24
+msgid "Zuletzt gehört"
+msgstr ""
+
+#: ui/context_actions.py:125
+msgid "Zum Album"
+msgstr ""
+
+#: ui/context_actions.py:122
+msgid "Zum Künstler"
+msgstr ""
+
+#: ui/main_window.py:187
+msgid "Zur Warteschlange hinzufügen\tCtrl+Q"
+msgstr ""
+
+#: ui/context_actions.py:103
+msgid "Zur Warteschlange hinzufügen{count}\tCtrl+Q"
+msgstr ""
+
+#: ui/search_panel.py:106
+msgid "Zur vorherigen Ansicht"
+msgstr ""
+
+#: ui/main_window.py:179
+msgid "Zurückspulen (10 s)\tCtrl+Shift+Left"
+msgstr ""
+
+#: ui/log_dialog.py:77
+msgid "Zwischenablage nicht verfügbar"
+msgstr ""
+
+#: download_manager.py:72
+msgid "abgebrochen"
+msgstr ""
+
+#: ui/main_window.py:54
+msgid "alle"
+msgstr ""
+
+#: ui/main_window.py:54
+msgid "aus"
+msgstr ""
+
+#: download_manager.py:71
+msgid "fehlgeschlagen"
+msgstr ""
+
+#: download_manager.py:70
+msgid "fertig"
+msgstr ""
+
+#: librespot_download.py:367
+msgid "ffmpeg konnte die Datei nicht umwandeln:"
+msgstr ""
+
+#: ui/browse_common.py:139
+msgid "gehört"
+msgstr ""
+
+#: nvda.py:124
+msgid "keine"
+msgstr ""
+
+#: librespot_manager.py:199
+msgid "librespot konnte nicht gestartet werden:\n\n{err}"
+msgstr ""
+
+#: ui/config_dialog.py:133
+msgid "librespot lädt den echten Spotify-Stream (OGG, Premium für 320 kbit/s); spotdl bezieht das Audio über YouTube als MP3."
+msgstr ""
+
+#: download_manager.py:69
+msgid "läuft"
+msgstr ""
+
+#: download_manager.py:287
+msgid "spotdl ist nicht installiert. Installieren Sie es mit: pip install spotdl"
+msgstr ""
+
+#: ui/main_window.py:69
+msgid "von {artists}"
+msgstr ""
+
+#: download_manager.py:68
+msgid "wartet"
+msgstr ""
+
+#: ui/browse_common.py:142
+msgid "weiter ab {position}"
+msgstr ""
+
+#: ui/downloads_dialog.py:106
+msgid "{cancelled} Download(s) werden abgebrochen"
+msgstr ""
+
+#: ui/playlist_edit.py:66
+msgid "{context} fehlgeschlagen: {short_error}"
+msgstr ""
+
+#: ui/downloads_dialog.py:111
+msgid "{count} Download(s) erneut eingereiht"
+msgstr ""
+
+#: ui/downloads_dialog.py:100
+msgid "{count} Download(s) werden abgebrochen"
+msgstr ""
+
+#: ui/panel_helpers.py:349
+msgid "{count} Downloads eingereiht"
+msgstr ""
+
+#: ui/context_actions.py:169
+msgid "{count} Einträge"
+msgstr ""
+
+#: ui/context_actions.py:240
+msgid "{count} Einträge entfernt"
+msgstr ""
+
+#: ui/context_actions.py:239
+msgid "{count} Einträge gespeichert"
+msgstr ""
+
+#: ui/browse_panel.py:386
+msgid "{count} Einträge markiert"
+msgstr ""
+
+#: ui/main_window.py:434
+msgid "{count} Schnellzugriff(e) entfernt"
+msgstr ""
+
+#: ui/playlist_edit.py:86
+msgid "{count} Titel aus der Playlist entfernen?"
+msgstr ""
+
+#: ui/queue_panel.py:272
+msgid "{count} Titel aus der Warteschlange entfernt"
+msgstr ""
+
+#: ui/list_io.py:73
+msgid "{count} Titel exportiert nach {path}"
+msgstr ""
+
+#: ui/list_io.py:153
+msgid "{count} Titel gefunden.\nName der neuen Playlist:"
+msgstr ""
+
+#: ui/queue_panel.py:330
+msgid "{count} Titel markiert"
+msgstr ""
+
+#: ui/search_panel.py:444
+msgid "{count} Treffer markiert"
+msgstr ""
+
+#: ui/search_panel.py:305
+msgid "{count} weitere Treffer, insgesamt {count2}"
+msgstr ""
+
+#: ui/downloads_dialog.py:88
+msgid "{done} von {total}"
+msgstr ""
+
+#: ui/context_actions.py:113
+msgid "{label}{count}\tCtrl+S"
+msgstr ""
+
+#: ui/search_panel.py:349
+msgid "{name} (Filter: {filter})"
+msgstr ""
+
+#: download_manager.py:106
+msgid "{name} (fehlgeschlagen: {reason})"
+msgstr ""
+
+#: download_manager.py:104
+msgid "{name} (läuft …)"
+msgstr ""
+
+#: download_manager.py:101
+msgid "{name} ({done}/{total})"
+msgstr ""
+
+#: download_manager.py:108
+msgid "{name} ({status})"
+msgstr ""
+
+#: ui/context_actions.py:251
+msgid "{name} aus der Mediathek entfernt"
+msgstr ""
+
+#: ui/playlist_edit.py:94
+msgid "{name} aus der Playlist entfernt"
+msgstr ""
+
+#: ui/queue_panel.py:270
+msgid "{name} aus der Warteschlange entfernt"
+msgstr ""
+
+#: ui/context_actions.py:250
+msgid "{name} in der Mediathek gespeichert"
+msgstr ""
+
+#: ui/context_actions.py:297
+msgid "{name} ist bereits als Schnellzugriff gemerkt."
+msgstr ""
+
+#: ui/context_actions.py:227
+msgid "{name} konnte nicht zur Warteschlange hinzugefügt werden: {failure}"
+msgstr ""
+
+#: ui/playlist_edit.py:120
+msgid "{name} nach oben verschoben"
+msgstr ""
+
+#: ui/playlist_edit.py:119
+msgid "{name} nach unten verschoben"
+msgstr ""
+
+#: ui/queue_panel.py:254
+msgid "{name} verschoben"
+msgstr ""
+
+#: ui/context_actions.py:373
+msgid "{name} zu Playlist {playlist_name} hinzugefügt"
+msgstr ""
+
+#: ui/context_actions.py:231
+msgid "{name} zur Warteschlange hinzugefügt"
+msgstr ""
+
+#: ui/context_actions.py:229
+msgid "{name} – nur {added} von {total} Titeln eingereiht, dann Fehler: {failure}"
+msgstr ""
+
+#: ui/context_actions.py:375
+msgid "{name} – {added} Titel zu Playlist {playlist_name} hinzugefügt"
+msgstr ""
+
+#: ui/context_actions.py:232
+msgid "{name} – {added} Titel zur Warteschlange hinzugefügt"
+msgstr ""
+
+#: ui/context_actions.py:211
+msgid "{name}: {added} von {count} eingereiht …"
+msgstr ""
+
+#: ui/main_window.py:843
+msgid "{position} von {duration}"
+msgstr ""
+
+#: ui/playlist_edit.py:95
+msgid "{removed} Titel aus der Playlist entfernt"
+msgstr ""
+
+#: ui/downloads_dialog.py:117
+msgid "{removed} erledigte Einträge entfernt"
+msgstr ""
+
+#: librespot_download.py:662
+msgid "{saved} von {total} Titel(n) heruntergeladen."
+msgstr ""
+
+#: ui/main_window.py:392
+msgid "{slot} {name} ({kind})\tCtrl+Shift+{slot2}"
+msgstr ""
+
+#: ui/panel_helpers.py:185
+msgid "{title}: 1 Eintrag"
+msgstr ""
+
+#: ui/panel_helpers.py:183
+msgid "{title}: keine Einträge"
+msgstr ""
+
+#: ui/panel_helpers.py:186
+msgid "{title}: {count} Einträge"
+msgstr ""
+
+#: ui/queue_panel.py:167
+msgid "{view_label}, {count} Titel"
+msgstr ""
+
+#: ui/main_window.py:230
+msgid "Öffnet den konfigurierten Zielordner im Explorer"
+msgstr ""
+
+#: ui/main_window.py:260
+msgid "Über"
+msgstr ""
+
+#: ui/browse_panel.py:65
+msgid "Übersicht"
+msgstr ""
+
+#: ui/queue_panel.py:84
+msgid "„Meine Liste“ ist bearbeitbar; „Spotify-Warteschlange“ zeigt, was Spotify wirklich als Nächstes spielt (nur lesend)."
+msgstr ""
+
+#: ui/playlist_edit.py:84
+msgid "„{name}“ aus der Playlist entfernen?"
+msgstr ""

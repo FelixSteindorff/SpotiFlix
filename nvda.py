@@ -23,6 +23,8 @@ import ctypes
 import os
 import sys
 
+from i18n import _
+
 _DLL_NAMES = (
     "nvdaControllerClient64.dll",
     "nvdaControllerClient32.dll",
@@ -118,8 +120,8 @@ def output_name() -> str:
     if _nvda_running():
         return "NVDA"
     if _load_sapi() is not None:
-        return "Windows-Sprachausgabe (SAPI5)"
-    return "keine"
+        return _("Windows-Sprachausgabe (SAPI5)")
+    return _("keine")
 
 
 def speak(text: str, interrupt: bool = False) -> bool:

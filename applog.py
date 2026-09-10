@@ -15,6 +15,8 @@ import threading
 import time
 from collections import deque
 
+from i18n import _
+
 LOG_FILE = os.path.expanduser("~/.spotiflix.log")
 MAX_LOG_BYTES = 500_000
 #: So viele Einträge hält der Dialog im Speicher vor.
@@ -78,16 +80,16 @@ def short_error(error, limit: int = 140, hint: bool = True) -> str:
     Statusleiste, die ohnehin nicht vorgelesen wird).
     """
     if error is None:
-        return "Unbekannter Fehler"
+        return _("Unbekannter Fehler")
     text = str(error).strip()
     if not text:
-        return "Unbekannter Fehler"
+        return _("Unbekannter Fehler")
     first_line = " ".join(text.splitlines()[0].split())
     truncated = len(text.splitlines()) > 1 or len(first_line) > limit
     if len(first_line) > limit:
         first_line = first_line[:limit].rstrip(" ,;:.") + " …"
     if truncated and hint:
-        first_line += " (Details: Protokoll, Strg+Umschalt+G)"
+        first_line += _(" (Details: Protokoll, Strg+Umschalt+G)")
     return first_line
 
 

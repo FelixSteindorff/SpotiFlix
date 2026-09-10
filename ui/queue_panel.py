@@ -43,22 +43,24 @@ from ui.panel_helpers import (
     start_playback,
 )
 
+from i18n import N_, _
+
 
 class QueuePanel(wx.Panel):
     """Bearbeitbare eigene Liste plus Blick auf Spotifys echte Warteschlange."""
 
-    VIEWS = [("local", "Meine Liste"), ("spotify", "Spotify-Warteschlange")]
+    VIEWS = [("local", N_("Meine Liste")), ("spotify", N_("Spotify-Warteschlange"))]
     #: Elementtypen, für die ein Kontextmenü angeboten wird.
     CONTEXT_TYPES = {"track", "episode"}
     #: Tasten, die dieses Panel selbst behandelt (für die Kürzelübersicht).
     LOCAL_SHORTCUTS = [
-        ("Eingabe", "Ab markiertem Titel abspielen"),
-        ("Strg+Pfeil hoch/runter", "Titel in „Meine Liste“ verschieben"),
-        ("Entf", "Markierte Titel entfernen"),
-        ("Strg+A", "Alles markieren"),
-        ("Strg+E", "Liste exportieren"),
-        ("F5", "Spotify-Warteschlange neu laden"),
-        ("Anwendungstaste, Umschalt+F10", "Kontextmenü zum markierten Titel"),
+        (N_("Eingabe"), N_("Ab markiertem Titel abspielen")),
+        (N_("Strg+Pfeil hoch/runter"), N_("Titel in „Meine Liste“ verschieben")),
+        (N_("Entf"), N_("Markierte Titel entfernen")),
+        (N_("Strg+A"), N_("Alles markieren")),
+        (N_("Strg+E"), N_("Liste exportieren")),
+        (N_("F5"), N_("Spotify-Warteschlange neu laden")),
+        (N_("Anwendungstaste, Umschalt+F10"), N_("Kontextmenü zum markierten Titel")),
     ]
 
     def __init__(self, parent):
@@ -68,43 +70,43 @@ class QueuePanel(wx.Panel):
         self.view = "local"
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        self.heading = wx.StaticText(self, label="Warteschlange")
+        self.heading = wx.StaticText(self, label=_("Warteschlange"))
         sizer.Add(self.heading, 0, wx.ALL | wx.EXPAND, 10)
 
         self.view_choice = wx.RadioBox(
             self,
-            label="Ansicht",
-            choices=[label for _key, label in self.VIEWS],
+            label=_("Ansicht"),
+            choices=[_(label) for _key, label in self.VIEWS],
             majorDimension=2,
             style=wx.RA_SPECIFY_COLS,
         )
         self.view_choice.SetToolTip(
-            "„Meine Liste“ ist bearbeitbar; „Spotify-Warteschlange“ zeigt, was "
-            "Spotify wirklich als Nächstes spielt (nur lesend)."
+            _("„Meine Liste“ ist bearbeitbar; „Spotify-Warteschlange“ zeigt, was "
+            "Spotify wirklich als Nächstes spielt (nur lesend).")
         )
         self.view_choice.Bind(wx.EVT_RADIOBOX, self._on_view_changed)
         sizer.Add(self.view_choice, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, 10)
 
         self.list = wx.ListCtrl(self, style=wx.LC_REPORT)
         # Zugänglicher Name: NVDA meldet sonst nur „Liste".
-        self.list.SetName("Warteschlange")
-        self.list.InsertColumn(0, "Titel", width=360)
-        self.list.InsertColumn(1, "Details", width=320)
+        self.list.SetName(_("Warteschlange"))
+        self.list.InsertColumn(0, _("Titel"), width=360)
+        self.list.InsertColumn(1, _("Details"), width=320)
         self.list.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self._on_activate)
         self.list.Bind(wx.EVT_KEY_DOWN, self._on_key_down)
         self.list.Bind(wx.EVT_CONTEXT_MENU, self._on_context_menu)
         sizer.Add(self.list, 1, wx.ALL | wx.EXPAND, 10)
 
         btn_box = wx.BoxSizer(wx.HORIZONTAL)
-        self.btn_up = wx.Button(self, label="Nach oben (Strg+Hoch)")
+        self.btn_up = wx.Button(self, label=_("Nach oben (Strg+Hoch)"))
         self.btn_up.Bind(wx.EVT_BUTTON, lambda e: self.move_selected(-1))
-        self.btn_down = wx.Button(self, label="Nach unten (Strg+Runter)")
+        self.btn_down = wx.Button(self, label=_("Nach unten (Strg+Runter)"))
         self.btn_down.Bind(wx.EVT_BUTTON, lambda e: self.move_selected(1))
-        self.btn_remove = wx.Button(self, label="Entfernen (Entf)")
+        self.btn_remove = wx.Button(self, label=_("Entfernen (Entf)"))
         self.btn_remove.Bind(wx.EVT_BUTTON, lambda e: self.remove_selected())
-        self.btn_clear = wx.Button(self, label="Leeren")
+        self.btn_clear = wx.Button(self, label=_("Leeren"))
         self.btn_clear.Bind(wx.EVT_BUTTON, lambda e: self.clear())
-        self.btn_reload = wx.Button(self, label="Aktualisieren (F5)")
+        self.btn_reload = wx.Button(self, label=_("Aktualisieren (F5)"))
         self.btn_reload.Bind(wx.EVT_BUTTON, lambda e: self.reload_spotify_queue())
         for btn in (self.btn_up, self.btn_down, self.btn_remove, self.btn_clear, self.btn_reload):
             btn_box.Add(btn, 1, wx.ALL | wx.EXPAND, 5)
@@ -124,7 +126,7 @@ class QueuePanel(wx.Panel):
         return self.items if self.view == "local" else self._spotify_items
 
     def _view_label(self) -> str:
-        return dict(self.VIEWS)[self.view]
+        return _(dict(self.VIEWS)[self.view])
 
     def _on_view_changed(self, event):
         self.view = self.VIEWS[self.view_choice.GetSelection()][0]
@@ -162,7 +164,7 @@ class QueuePanel(wx.Panel):
             self.list.SetItem(index, 1, self._details(row))
         label = f"{self._view_label()} ({len(rows)})"
         self.heading.SetLabel(label)
-        self.list.SetName(f"{self._view_label()}, {len(rows)} Titel")
+        self.list.SetName(_("{view_label}, {count} Titel").format(view_label=self._view_label(), count=len(rows)))
         editable = self.view == "local" and bool(rows)
         for btn in (self.btn_up, self.btn_down, self.btn_remove, self.btn_clear):
             btn.Enable(editable)
@@ -195,7 +197,7 @@ class QueuePanel(wx.Panel):
 
     def reload_spotify_queue(self):
         """Holt Spotifys tatsächliche Warteschlange im Hintergrund."""
-        announce(self, "Lade Spotify-Warteschlange …", verbose=True)
+        announce(self, _("Lade Spotify-Warteschlange …"), verbose=True)
         origin = focus_origin()
 
         def worker():
@@ -203,7 +205,7 @@ class QueuePanel(wx.Panel):
                 current, upcoming = client.queue_snapshot()
             except Exception as e:
                 applog.error("Warteschlange", e)
-                call_after(announce, self, f"Warteschlange konnte nicht geladen werden: {short_error(e)}")
+                call_after(announce, self, _("Warteschlange konnte nicht geladen werden: {short_error}").format(short_error=short_error(e)))
                 return
             rows = []
             if current:
@@ -218,7 +220,8 @@ class QueuePanel(wx.Panel):
         row = episode_row(item) if item.get("type") == "episode" else track_row(item)
         if playing:
             row = dict(row, playing=True)
-            row["details"] = " - ".join(part for part in ["Läuft gerade", row.get("details", "")] if part)
+            row["details"] = " - ".join(
+                part for part in [_("Läuft gerade"), row.get("details", "")] if part)
         return row
 
     def _apply_spotify_rows(self, rows: list[dict], origin):
@@ -226,7 +229,7 @@ class QueuePanel(wx.Panel):
         if self.view != "spotify":
             return
         self._render(select=0)
-        announce(self, count_message("Spotify-Warteschlange", len(rows)))
+        announce(self, count_message(_("Spotify-Warteschlange"), len(rows)))
         restore_focus(self.list, origin)
 
     # -- Bearbeiten (nur „Meine Liste") --------------------------------------
@@ -234,7 +237,7 @@ class QueuePanel(wx.Panel):
     def _require_local(self) -> bool:
         if self.view == "local":
             return True
-        announce(self, "Die Spotify-Warteschlange lässt sich nicht bearbeiten.")
+        announce(self, _("Die Spotify-Warteschlange lässt sich nicht bearbeiten."))
         return False
 
     def move_selected(self, direction: int):
@@ -248,7 +251,7 @@ class QueuePanel(wx.Panel):
             return
         self.items[index], self.items[target] = self.items[target], self.items[index]
         self._render(select=target)
-        announce(self, f"{self.items[target].get('name', '')} verschoben")
+        announce(self, _("{name} verschoben").format(name=self.items[target].get('name', '')))
 
     def remove_selected(self):
         if not self._require_local():
@@ -264,9 +267,9 @@ class QueuePanel(wx.Panel):
             return
         self._render(select=min(indices))
         if len(removed) == 1:
-            announce(self, f"{removed[0].get('name', '')} aus der Warteschlange entfernt")
+            announce(self, _("{name} aus der Warteschlange entfernt").format(name=removed[0].get('name', '')))
         else:
-            announce(self, f"{len(removed)} Titel aus der Warteschlange entfernt")
+            announce(self, _("{count} Titel aus der Warteschlange entfernt").format(count=len(removed)))
 
     def clear(self):
         if not self._require_local():
@@ -275,7 +278,7 @@ class QueuePanel(wx.Panel):
             return
         self.items = []
         self._render()
-        announce(self, "Warteschlange geleert")
+        announce(self, _("Warteschlange geleert"))
 
     # -- Wiedergabe ----------------------------------------------------------
 
@@ -297,25 +300,25 @@ class QueuePanel(wx.Panel):
         name = row.get("name", "")
         artist = self._details(row)
         now_playing_label = f"{artist} - {name}" if artist else name
-        announce(self, f"Spiele Warteschlange ab: {name}")
+        announce(self, _("Spiele Warteschlange ab: {name}").format(name=name))
 
         def worker():
             try:
                 played = client.play_uris(uris)
                 if not played:
-                    call_after(wx.MessageBox, "Zuerst autorisieren!", "Fehler", wx.ICON_ERROR)
-                    call_after(announce, self, "Wiedergabe nicht möglich – zuerst autorisieren")
+                    call_after(wx.MessageBox, _("Zuerst autorisieren!"), _("Fehler"), wx.ICON_ERROR)
+                    call_after(announce, self, _("Wiedergabe nicht möglich – zuerst autorisieren"))
                     return
                 call_after(mark_local_player_running, self)
                 call_after(set_now_playing, self, now_playing_label)
                 # Spotify nimmt pro Start maximal 100 Titel entgegen – das wird
                 # angesagt, statt die Liste stillschweigend zu kürzen.
-                message = f"Wiedergabe gestartet: {name}"
+                message = _("Wiedergabe gestartet: {name}").format(name=name)
                 if played < len(uris):
-                    message += f" – die ersten {played} von {len(uris)} Titeln"
+                    message += _(" – die ersten {played} von {count} Titeln").format(played=played, count=len(uris))
                 call_after(announce, self, message)
             except Exception as e:
-                call_after(wx.MessageBox, str(e), "Wiedergabefehler", wx.ICON_WARNING)
+                call_after(wx.MessageBox, str(e), _("Wiedergabefehler"), wx.ICON_WARNING)
 
         threading.Thread(target=worker, daemon=True).start()
 
@@ -324,7 +327,8 @@ class QueuePanel(wx.Panel):
     def _select_all(self):
         for index in range(self.list.GetItemCount()):
             self.list.Select(index)
-        announce(self, f"{self.list.GetSelectedItemCount()} Titel markiert")
+        announce(self, _("{count} Titel markiert").format(
+            count=self.list.GetSelectedItemCount()))
 
     def _export_view(self):
         export_rows(self, self.rows, self._view_label())

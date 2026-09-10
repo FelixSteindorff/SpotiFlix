@@ -55,28 +55,30 @@ from ui.panel_helpers import (
 )
 from ui.playlist_edit import edit_details, move_track, playlist_id_for, remove_tracks
 
+from i18n import N_, _
+
 
 class BrowsePanel(wx.Panel):
     """Listen-Panel mit Navigationsstapel, Hintergrundladen und Ansagen."""
 
     #: Überschrift und Listenname der Einstiegsansicht.
-    ROOT_TITLE = "Übersicht"
+    ROOT_TITLE = N_("Übersicht")
     #: Elementtypen, für die ein Kontextmenü angeboten wird.
     CONTEXT_TYPES = {"track", "episode", "album", "artist", "playlist", "show"}
     #: Tasten, die dieses Panel selbst behandelt (für die Kürzelübersicht).
     LOCAL_SHORTCUTS = [
-        ("Eingabe", "Eintrag öffnen bzw. abspielen"),
-        ("Rücktaste, Alt+Pfeil links, Esc", "Eine Ebene zurück"),
-        ("Strg+F", "Liste filtern"),
-        ("Esc", "Filter aufheben"),
-        ("F5", "Ansicht neu laden"),
-        ("Strg+A", "Alles markieren"),
-        ("Umschalt+Pfeiltasten", "Mehrere Einträge markieren"),
-        ("Anwendungstaste, Umschalt+F10", "Kontextmenü zum markierten Eintrag"),
-        ("Entf", "Markierte Titel aus der geöffneten Playlist entfernen"),
-        ("Strg+Pfeil hoch/runter", "Titel in der geöffneten Playlist verschieben"),
-        ("F2", "Playlist umbenennen und Beschreibung bearbeiten"),
-        ("Strg+E", "Angezeigte Liste exportieren"),
+        (N_("Eingabe"), N_("Eintrag öffnen bzw. abspielen")),
+        (N_("Rücktaste, Alt+Pfeil links, Esc"), N_("Eine Ebene zurück")),
+        (N_("Strg+F"), N_("Liste filtern")),
+        (N_("Esc"), N_("Filter aufheben")),
+        (N_("F5"), N_("Ansicht neu laden")),
+        (N_("Strg+A"), N_("Alles markieren")),
+        (N_("Umschalt+Pfeiltasten"), N_("Mehrere Einträge markieren")),
+        (N_("Anwendungstaste, Umschalt+F10"), N_("Kontextmenü zum markierten Eintrag")),
+        (N_("Entf"), N_("Markierte Titel aus der geöffneten Playlist entfernen")),
+        (N_("Strg+Pfeil hoch/runter"), N_("Titel in der geöffneten Playlist verschieben")),
+        (N_("F2"), N_("Playlist umbenennen und Beschreibung bearbeiten")),
+        (N_("Strg+E"), N_("Angezeigte Liste exportieren")),
     ]
 
     def __init__(self, parent):
@@ -101,10 +103,10 @@ class BrowsePanel(wx.Panel):
         self.build_controls(sizer)
 
         self.list = wx.ListCtrl(self, style=wx.LC_REPORT)
-        self.list.InsertColumn(0, "Name", width=360)
-        self.list.InsertColumn(1, "Details", width=320)
+        self.list.InsertColumn(0, _("Name"), width=360)
+        self.list.InsertColumn(1, _("Details"), width=320)
         # Zugänglicher Name: NVDA meldet sonst nur „Liste".
-        self.list.SetName(self.ROOT_TITLE)
+        self.list.SetName(_(self.ROOT_TITLE))
         self.list.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self._on_activate)
         self.list.Bind(wx.EVT_KEY_DOWN, self._on_key_down)
         self.list.Bind(wx.EVT_CONTEXT_MENU, self._on_context_menu)
@@ -133,10 +135,10 @@ class BrowsePanel(wx.Panel):
 
     def _build_sort_control(self, sizer: wx.Sizer):
         box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(wx.StaticText(self, label="Sortierung:"), 0,
+        box.Add(wx.StaticText(self, label=_("Sortierung:")), 0,
                 wx.ALIGN_CENTER_VERTICAL | wx.RIGHT, 8)
-        self.sort_choice = wx.Choice(self, choices=[label for _key, label in SORT_MODES])
-        self.sort_choice.SetName("Sortierung")
+        self.sort_choice = wx.Choice(self, choices=[_(label) for _key, label in SORT_MODES])
+        self.sort_choice.SetName(_("Sortierung"))
         self.sort_choice.SetSelection(0)
         self.sort_choice.Bind(wx.EVT_CHOICE, self._on_sort_choice)
         box.Add(self.sort_choice, 0, wx.ALIGN_CENTER_VERTICAL)
@@ -144,11 +146,12 @@ class BrowsePanel(wx.Panel):
 
     def _on_sort_choice(self, event):
         self.sort_mode, label = SORT_MODES[self.sort_choice.GetSelection()]
+        label = _(label)
         selected = self.get_selected_item()
         # Der Fokus bleibt bewusst auf der Auswahl – sonst würde NVDA mitten in
         # der Auswahl auf die Liste umschalten.
         self._set_rows(self._raw_items, select_item=selected)
-        announce(self, f"Sortierung: {label}")
+        announce(self, _("Sortierung: {label}").format(label=label))
 
     def sort_rows(self, items: list[dict]) -> list[dict]:
         """Sortiert die Zeilen; in der Übersicht bleibt die Reihenfolge fest."""
@@ -164,7 +167,7 @@ class BrowsePanel(wx.Panel):
     def _require_client(self):
         sp = client.get()
         if not sp:
-            raise RuntimeError("Zuerst autorisieren!")
+            raise RuntimeError(_("Zuerst autorisieren!"))
         return sp
 
     def _set_busy(self, busy: bool):
@@ -182,7 +185,7 @@ class BrowsePanel(wx.Panel):
         self.view_key = "overview"
         self._current_load = None
         self._filter = ""
-        self._set_title(self.ROOT_TITLE)
+        self._set_title(_(self.ROOT_TITLE))
         self._set_rows(self.overview_rows())
 
     def _set_title(self, title: str):
@@ -237,7 +240,7 @@ class BrowsePanel(wx.Panel):
         self.list.DeleteAllItems()
         self.items = []
         self._raw_items = []
-        announce(self, f"Lade {title} …", verbose=True)
+        announce(self, _("Lade {title} …").format(title=title), verbose=True)
         self._set_busy(True)
         origin = focus_origin()
         threading.Thread(
@@ -247,7 +250,7 @@ class BrowsePanel(wx.Panel):
     def _reload_current(self):
         """Lädt die aktuelle Ansicht neu (F5) und behält die Position."""
         if not self._current_load:
-            announce(self, "Diese Ansicht lässt sich nicht neu laden.")
+            announce(self, _("Diese Ansicht lässt sich nicht neu laden."))
             return
         _view_key, title, worker, args = self._current_load
         index = self.list.GetFirstSelected()
@@ -270,9 +273,9 @@ class BrowsePanel(wx.Panel):
 
     def _load_failed(self, error: Exception):
         applog.error("Laden", error)
-        announce(self, f"Fehler: {short_error(error)}")
+        announce(self, _("Fehler: {error}").format(error=short_error(error)))
         self._go_back()
-        wx.MessageBox(f"Fehler: {error}", "Fehler", wx.ICON_ERROR)
+        wx.MessageBox(_("Fehler: {error}").format(error=error), _("Fehler"), wx.ICON_ERROR)
 
     def _go_back(self):
         if not self.stack:
@@ -291,7 +294,7 @@ class BrowsePanel(wx.Panel):
     def _prompt_filter(self):
         """Fragt einen Filtertext ab und wendet ihn auf die aktuelle Liste an."""
         dialog = wx.TextEntryDialog(
-            self, "Liste filtern (leer = alle anzeigen):", "Filter", self._filter
+            self, _("Liste filtern (leer = alle anzeigen):"), _("Filter"), self._filter
         )
         if dialog.ShowModal() == wx.ID_OK:
             self._apply_filter(dialog.GetValue().strip())
@@ -304,7 +307,7 @@ class BrowsePanel(wx.Panel):
         self._set_rows(self._raw_items, select_item=selected)
         self._set_title(self.heading.GetLabel())
         if text:
-            announce(self, f"Filter „{text}“: {len(self.items)} von {len(self._raw_items)} Einträgen")
+            announce(self, _("Filter „{text}“: {count} von {count2} Einträgen").format(text=text, count=len(self.items), count2=len(self._raw_items)))
         else:
             announce(self, count_message(self.heading.GetLabel(), len(self.items)))
 
@@ -317,14 +320,14 @@ class BrowsePanel(wx.Panel):
     def _remove_from_playlist(self):
         playlist_id = self._playlist_id()
         if not playlist_id:
-            announce(self, "Diese Ansicht ist keine bearbeitbare Playlist.")
+            announce(self, _("Diese Ansicht ist keine bearbeitbare Playlist."))
             return
         remove_tracks(self, playlist_id, self.get_selected_items(), on_done=self._reload_current)
 
     def _move_in_playlist(self, direction: int):
         playlist_id = self._playlist_id()
         if not playlist_id:
-            announce(self, "Diese Ansicht ist keine bearbeitbare Playlist.")
+            announce(self, _("Diese Ansicht ist keine bearbeitbare Playlist."))
             return
         item = self.get_selected_item()
         if item:
@@ -333,7 +336,7 @@ class BrowsePanel(wx.Panel):
     def _edit_playlist(self):
         playlist_id = self._playlist_id()
         if not playlist_id:
-            announce(self, "Diese Ansicht ist keine bearbeitbare Playlist.")
+            announce(self, _("Diese Ansicht ist keine bearbeitbare Playlist."))
             return
         edit_details(self, playlist_id, on_done=self._reload_current)
 
@@ -380,7 +383,8 @@ class BrowsePanel(wx.Panel):
     def _select_all(self):
         for index in range(self.list.GetItemCount()):
             self.list.Select(index)
-        announce(self, f"{self.list.GetSelectedItemCount()} Einträge markiert")
+        announce(self, _("{count} Einträge markiert").format(
+            count=self.list.GetSelectedItemCount()))
 
     def _on_activate(self, event):
         index = event.GetIndex()
@@ -427,14 +431,15 @@ class BrowsePanel(wx.Panel):
         artist_id, name = get_artist_ref(item)
         if not artist_id:
             return
-        title = name or "Künstler"
+        title = name or _("Künstler")
         # Die Übersicht selbst braucht keinen API-Aufruf.
         self._push_and_load("artist", title, artist_overview_rows, artist_id, title)
 
     def _open_artist_section(self, item: dict):
         section = item["section"]
         artist_name = item.get("artist_name", "")
-        title = f"{artist_name} – {ARTIST_SECTION_TITLES.get(section, item.get('name', ''))}".strip(" –")
+        section_title = _(ARTIST_SECTION_TITLES.get(section, item.get("name", "")))
+        title = f"{artist_name} – {section_title}".strip(" –")
         self._push_and_load(
             "artist_section", title, self._load_artist_section,
             section, item["artist_id"], artist_name,

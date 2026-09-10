@@ -11,6 +11,8 @@ import threading
 import applog
 import config as cfg
 
+from i18n import N_, _
+
 # Unter Windows verhindert CREATE_NO_WINDOW, dass für jeden Aufruf kurz ein
 # Konsolenfenster aufblitzt (im PyInstaller-Windowed-Build sichtbar). Das stiehlt
 # sonst den Fokus und wird von NVDA mitgelesen.
@@ -61,11 +63,13 @@ class DownloadCancelled(Exception):
 
 
 # Zustände eines Auftrags in der Warteschlange.
-STATUS_WAITING = "wartet"
-STATUS_RUNNING = "läuft"
-STATUS_DONE = "fertig"
-STATUS_FAILED = "fehlgeschlagen"
-STATUS_CANCELLED = "abgebrochen"
+# Die Werte sind zugleich die angezeigten Texte; N_() macht sie übersetzbar,
+# die Übersetzung passiert beim Anzeigen (status_label).
+STATUS_WAITING = N_("wartet")
+STATUS_RUNNING = N_("läuft")
+STATUS_DONE = N_("fertig")
+STATUS_FAILED = N_("fehlgeschlagen")
+STATUS_CANCELLED = N_("abgebrochen")
 #: Zustände, aus denen heraus ein erneuter Versuch sinnvoll ist.
 RETRYABLE = (STATUS_FAILED, STATUS_CANCELLED)
 
@@ -87,15 +91,21 @@ class DownloadJob:
     def finished(self) -> bool:
         return self.status in (STATUS_DONE, STATUS_FAILED, STATUS_CANCELLED)
 
+    def status_label(self) -> str:
+        """Der Zustand in der Sprache der Oberfläche."""
+        return _(self.status)
+
     def label(self) -> str:
         """Kurzbeschreibung für Statusleiste und Dialog."""
         if self.status == STATUS_RUNNING and self.total:
-            return f"{self.name} ({self.done}/{self.total})"
+            return _("{name} ({done}/{total})").format(
+                name=self.name, done=self.done, total=self.total)
         if self.status == STATUS_RUNNING:
-            return f"{self.name} (läuft …)"
+            return _("{name} (läuft …)").format(name=self.name)
         if self.status == STATUS_FAILED:
-            return f"{self.name} (fehlgeschlagen: {applog.short_error(self.error, 60, hint=False)})"
-        return f"{self.name} ({self.status})"
+            return _("{name} (fehlgeschlagen: {reason})").format(
+                name=self.name, reason=applog.short_error(self.error, 60, hint=False))
+        return _("{name} ({status})").format(name=self.name, status=self.status_label())
 
 
 class DownloadQueue:
@@ -269,12 +279,12 @@ def download_via_spotdl(item: dict, output_dir: str | None = None, progress_call
     """Startet spotdl für ein Spotify-Objekt und gibt die Konsolenausgabe zurück."""
     url = get_item_url(item)
     if not url:
-        raise RuntimeError("Für dieses Element ist kein Spotify-Link verfügbar.")
+        raise RuntimeError(_("Für dieses Element ist kein Spotify-Link verfügbar."))
 
     spotdl = shutil.which("spotdl")
     if not spotdl:
         raise RuntimeError(
-            "spotdl ist nicht installiert. Installieren Sie es mit: pip install spotdl"
+            _("spotdl ist nicht installiert. Installieren Sie es mit: pip install spotdl")
         )
 
     target_dir = os.path.expanduser(output_dir or cfg.get_download_dir())
@@ -313,7 +323,7 @@ def download_via_spotdl(item: dict, output_dir: str | None = None, progress_call
         if cancel_event is not None and cancel_event.is_set():
             process.terminate()
             process.wait(timeout=10)
-            raise DownloadCancelled("Download abgebrochen.")
+            raise DownloadCancelled(_("Download abgebrochen."))
         lines.append(line)
         match = re.search(r"Found (\d+) song", line)
         if match:
@@ -328,5 +338,5 @@ def download_via_spotdl(item: dict, output_dir: str | None = None, progress_call
 
     output = "".join(lines).strip()
     if process.returncode != 0:
-        raise RuntimeError(output or "Download fehlgeschlagen.")
+        raise RuntimeError(output or _("Download fehlgeschlagen."))
     return output

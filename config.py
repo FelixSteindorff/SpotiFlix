@@ -7,6 +7,8 @@ import threading
 
 import keyring
 
+from i18n import N_
+
 SERVICE_NAME = "SpotiFlix"
 TOKEN_FILE = os.path.expanduser("~/.spotify-token.json")
 SETTINGS_FILE = os.path.expanduser("~/.spotiflix-settings.json")
@@ -17,13 +19,14 @@ DEFAULT_DOWNLOAD_TEMPLATE = "%artist%/%album%/%num,2% - %title%"
 DEFAULT_DOWNLOAD_METHOD = "spotdl"
 DEFAULT_DOWNLOAD_FORMAT = "ogg"
 DEFAULT_AUTOPLAY = "context"
+DEFAULT_LANGUAGE = "system"
 DEFAULT_VERBOSITY = "full"
 # Ausführlichkeit der Sprachansagen. „Kurz" lässt Zwischenmeldungen wie
 # „Lade Alben …" weg und sagt nur noch Ergebnisse und Fehler an; in der
 # Statusleiste stehen sie weiterhin.
 VERBOSITY_MODES = {
-    "full": "Ausführlich (auch Zwischenmeldungen)",
-    "short": "Kurz (nur Ergebnisse)",
+    "full": N_("Ausführlich (auch Zwischenmeldungen)"),
+    "short": N_("Kurz (nur Ergebnisse)"),
 }
 # Wie viele Suchbegriffe im Verlauf des Suchfelds behalten werden.
 SEARCH_HISTORY_SIZE = 20
@@ -37,25 +40,25 @@ MAX_DOWNLOAD_PARALLEL = 4
 MAX_BOOKMARKS = 9
 # Autoplay-Modus: Was passiert, nachdem ein einzelner Titel abgespielt wurde?
 AUTOPLAY_MODES = {
-    "off": "Aus (nur der gewählte Titel)",
-    "context": "In Playlist/Album fortsetzen",
-    "all": "Immer weiterspielen",
+    "off": N_("Aus (nur der gewählte Titel)"),
+    "context": N_("In Playlist/Album fortsetzen"),
+    "all": N_("Immer weiterspielen"),
 }
 DOWNLOAD_METHODS = {
-    "spotdl": "YouTube-Quelle (spotdl)",
-    "librespot": "Echter Spotify-Stream (librespot)",
+    "spotdl": N_("YouTube-Quelle (spotdl)"),
+    "librespot": N_("Echter Spotify-Stream (librespot)"),
 }
 # Dateiformat für librespot-Downloads. "ogg" ist der native Stream ohne
 # Umwandlung; "mp3"/"m4a" werden per ffmpeg aus dem OGG-Stream konvertiert.
 DOWNLOAD_FORMATS = {
-    "ogg": "OGG Vorbis (Original)",
+    "ogg": N_("OGG Vorbis (Original)"),
     "mp3": "MP3",
-    "m4a": "M4A (AAC)",
+    "m4a": N_("M4A (AAC)"),
 }
 PLAYBACK_QUALITIES = {
-    "96": "Niedrig (96 kbit/s)",
-    "160": "Normal (160 kbit/s)",
-    "320": "Hoch (320 kbit/s)",
+    "96": N_("Niedrig (96 kbit/s)"),
+    "160": N_("Normal (160 kbit/s)"),
+    "320": N_("Hoch (320 kbit/s)"),
 }
 DOWNLOAD_QUALITIES = {
     "128k": "128 kbit/s",
@@ -196,6 +199,12 @@ def get_download_format() -> str:
     return value if value in DOWNLOAD_FORMATS else DEFAULT_DOWNLOAD_FORMAT
 
 
+def get_language() -> str:
+    """Gibt die gewählte Oberflächensprache zurück ('system', 'de' oder 'en')."""
+    value = str(_load_settings().get("language", DEFAULT_LANGUAGE))
+    return value if value in ("system", "de", "en") else DEFAULT_LANGUAGE
+
+
 def get_verbosity() -> str:
     """Gibt die Ausführlichkeit der Ansagen zurück ('full' oder 'short')."""
     value = str(_load_settings().get("verbosity", DEFAULT_VERBOSITY))
@@ -294,6 +303,7 @@ def save_player_settings(
     download_format: str = DEFAULT_DOWNLOAD_FORMAT,
     autoplay: str = DEFAULT_AUTOPLAY,
     verbosity: str = DEFAULT_VERBOSITY,
+    language: str = DEFAULT_LANGUAGE,
     volume_normalisation: bool = DEFAULT_VOLUME_NORMALISATION,
     initial_volume: int = DEFAULT_INITIAL_VOLUME,
     download_parallel: int = DEFAULT_DOWNLOAD_PARALLEL,
@@ -307,6 +317,7 @@ def save_player_settings(
     settings["download_format"] = download_format if download_format in DOWNLOAD_FORMATS else DEFAULT_DOWNLOAD_FORMAT
     settings["autoplay"] = autoplay if autoplay in AUTOPLAY_MODES else DEFAULT_AUTOPLAY
     settings["verbosity"] = verbosity if verbosity in VERBOSITY_MODES else DEFAULT_VERBOSITY
+    settings["language"] = language if language in ("system", "de", "en") else DEFAULT_LANGUAGE
     settings["volume_normalisation"] = bool(volume_normalisation)
     settings["initial_volume"] = max(0, min(100, int(initial_volume)))
     settings["download_parallel"] = max(1, min(MAX_DOWNLOAD_PARALLEL, int(download_parallel)))

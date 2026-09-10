@@ -15,6 +15,8 @@ import wx
 
 from ui.panel_helpers import announce
 
+from i18n import _
+
 
 def _menu_shortcuts(frame) -> list[dict]:
     """Liest alle Menüeinträge samt ihrer Kürzel aus der Menüleiste."""
@@ -58,7 +60,7 @@ def _panel_shortcuts(frame) -> list[dict]:
             continue
         area = notebook.GetPageText(index)
         for key, name in local:
-            rows.append({"area": area, "key": key, "name": name})
+            rows.append({"area": area, "key": _(key), "name": _(name)})
     return rows
 
 
@@ -67,7 +69,8 @@ def collect_shortcuts(frame) -> list[dict]:
     rows = _menu_shortcuts(frame) + _panel_shortcuts(frame)
     media = getattr(frame, "media_shortcuts", None)
     if media:
-        rows += [{"area": "Medientasten", "key": key, "name": name} for key, name in media()]
+        rows += [{"area": _("Medientasten"), "key": key, "name": name}
+                 for key, name in media()]
     seen = set()
     unique = []
     for row in rows:
@@ -83,26 +86,26 @@ class ShortcutsDialog(wx.Dialog):
     """Zeigt alle Tastenkürzel; das Feld oben filtert die Liste."""
 
     def __init__(self, parent, rows: list[dict]):
-        super().__init__(parent, title="Tastenkürzel", size=(620, 520))
+        super().__init__(parent, title=_("Tastenkürzel"), size=(620, 520))
         self._rows = rows
 
         panel = wx.Panel(self)
         sizer = wx.BoxSizer(wx.VERTICAL)
 
-        sizer.Add(wx.StaticText(panel, label="Suchen (Kürzel oder Funktion):"), 0, wx.ALL, 8)
+        sizer.Add(wx.StaticText(panel, label=_("Suchen (Kürzel oder Funktion):")), 0, wx.ALL, 8)
         self.search = wx.TextCtrl(panel)
-        self.search.SetName("Kürzel suchen")
+        self.search.SetName(_("Kürzel suchen"))
         self.search.Bind(wx.EVT_TEXT, self._on_filter)
         sizer.Add(self.search, 0, wx.ALL | wx.EXPAND, 8)
 
         self.list = wx.ListCtrl(panel, style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
-        self.list.SetName("Tastenkürzel")
-        self.list.InsertColumn(0, "Bereich", width=130)
-        self.list.InsertColumn(1, "Kürzel", width=160)
-        self.list.InsertColumn(2, "Funktion", width=290)
+        self.list.SetName(_("Tastenkürzel"))
+        self.list.InsertColumn(0, _("Bereich"), width=130)
+        self.list.InsertColumn(1, _("Kürzel"), width=160)
+        self.list.InsertColumn(2, _("Funktion"), width=290)
         sizer.Add(self.list, 1, wx.ALL | wx.EXPAND, 8)
 
-        btn_close = wx.Button(panel, id=wx.ID_CANCEL, label="Schließen")
+        btn_close = wx.Button(panel, id=wx.ID_CANCEL, label=_("Schließen"))
         btn_close.SetDefault()
         sizer.Add(btn_close, 0, wx.ALL | wx.EXPAND, 8)
 
@@ -117,7 +120,7 @@ class ShortcutsDialog(wx.Dialog):
             index = self.list.InsertItem(self.list.GetItemCount(), row["area"])
             self.list.SetItem(index, 1, row["key"])
             self.list.SetItem(index, 2, row["name"])
-        self.list.SetName(f"Tastenkürzel, {len(rows)} Einträge")
+        self.list.SetName(_("Tastenkürzel, {count} Einträge").format(count=len(rows)))
 
     def _on_filter(self, event):
         needle = self.search.GetValue().strip().casefold()
@@ -135,7 +138,7 @@ class ShortcutsDialog(wx.Dialog):
 def show_shortcuts(frame):
     """Öffnet die Kürzelübersicht des aktuellen Fensters."""
     rows = collect_shortcuts(frame)
-    announce(frame, f"Tastenkürzel: {len(rows)} Einträge")
+    announce(frame, _("Tastenkürzel: {count} Einträge").format(count=len(rows)))
     dialog = ShortcutsDialog(frame, rows)
     dialog.ShowModal()
     dialog.Destroy()

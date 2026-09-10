@@ -7,24 +7,25 @@ Ladefunktionen.
 """
 from ui.browse_common import album_row, artist_row, playlist_row, track_row
 from ui.browse_panel import BrowsePanel
+from i18n import N_, _
 from ui.panel_helpers import collect_page_items
 
 
 class LibraryPanel(BrowsePanel):
     """Zeigt Playlists, Künstler, Alben und Titel als navigierbare Listen."""
 
-    ROOT_TITLE = "Mediathek"
+    ROOT_TITLE = N_("Mediathek")
 
     CATEGORIES = [
-        ("playlists", "Playlists", "Ihre gespeicherten und abonnierten Playlists"),
-        ("artists", "Künstler", "Von Ihnen gefolgte Künstler"),
-        ("albums", "Alben", "Gespeicherte Alben"),
-        ("tracks", "Titel", "Gespeicherte Titel"),
+        ("playlists", N_("Playlists"), N_("Ihre gespeicherten und abonnierten Playlists")),
+        ("artists", N_("Künstler"), N_("Von Ihnen gefolgte Künstler")),
+        ("albums", N_("Alben"), N_("Gespeicherte Alben")),
+        ("tracks", N_("Titel"), N_("Gespeicherte Titel")),
     ]
 
     def overview_rows(self) -> list[dict]:
         return [
-            {"type": "category", "category": key, "name": name, "details": details}
+            {"type": "category", "category": key, "name": _(name), "details": _(details)}
             for key, name, details in self.CATEGORIES
         ]
 
@@ -32,13 +33,14 @@ class LibraryPanel(BrowsePanel):
         if item.get("type") != "category":
             return False
         loaders = {
-            "playlists": ("Playlists", self._load_playlists),
-            "artists": ("Künstler", self._load_artists),
-            "albums": ("Alben", self._load_albums),
-            "tracks": ("Titel", self._load_tracks),
+            "playlists": self._load_playlists,
+            "artists": self._load_artists,
+            "albums": self._load_albums,
+            "tracks": self._load_tracks,
         }
         category = item["category"]
-        title, worker = loaders[category]
+        # Der Titel der Unteransicht ist der Name der Kategoriezeile.
+        title, worker = item.get("name", category), loaders[category]
         self._push_and_load(category, title, worker)
         return True
 
