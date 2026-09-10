@@ -25,6 +25,7 @@ import threading
 
 import wx
 
+import applog
 from spotify_client import client
 from ui.browse_common import (
     ARTIST_SECTION_TITLES,
@@ -267,8 +268,6 @@ class BrowsePanel(wx.Panel):
         restore_focus(self.list, origin)
 
     def _load_failed(self, error: Exception):
-        import applog
-
         applog.error("Laden", error)
         announce(self, f"Fehler: {error}")
         self._go_back()

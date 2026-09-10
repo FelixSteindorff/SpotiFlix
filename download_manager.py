@@ -111,6 +111,7 @@ class DownloadQueue:
     def __init__(self):
         self._jobs: dict[int, DownloadJob] = {}
         self._order: list[int] = []
+        self._seq = 0
         self._pending: queue.Queue = queue.Queue()
         self._lock = threading.Lock()
         self._workers: list[threading.Thread] = []
@@ -130,7 +131,11 @@ class DownloadQueue:
     def submit(self, item: dict, name: str | None = None) -> DownloadJob:
         """Reiht ein Element zum Herunterladen ein."""
         with self._lock:
-            job_id = len(self._order) + 1
+            # Fortlaufend und nie rückwärts: Nach clear_finished() dürfen alte
+            # IDs nicht erneut vergeben werden, sonst überschreibt ein neuer
+            # Auftrag einen noch laufenden.
+            self._seq += 1
+            job_id = self._seq
             job = DownloadJob(job_id, item, name or item.get("name") or "Auswahl")
             self._jobs[job_id] = job
             self._order.append(job_id)
