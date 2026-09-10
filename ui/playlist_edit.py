@@ -16,7 +16,7 @@ import wx
 
 import applog
 from spotify_client import client
-from ui.panel_helpers import announce, call_after
+from ui.panel_helpers import announce, call_after, short_error
 
 # Ob eine Playlist bearbeitet werden darf, ändert sich während einer Sitzung
 # praktisch nie – die Antwort wird darum je Playlist gemerkt.
@@ -61,7 +61,7 @@ def _run(panel: wx.Window, playlist_id: str, action, on_done, context: str):
                 call_after(on_done)
         except Exception as e:
             applog.error(context, e)
-            call_after(announce, panel, f"{context} fehlgeschlagen: {e}")
+            call_after(announce, panel, f"{context} fehlgeschlagen: {short_error(e)}")
             call_after(wx.MessageBox, str(e), context, wx.ICON_WARNING)
 
     threading.Thread(target=worker, daemon=True).start()
@@ -166,7 +166,7 @@ def edit_details(panel: wx.Window, playlist_id: str, on_done=None):
             editable = _is_editable(playlist_id)
         except Exception as e:
             applog.error("Playlist bearbeiten", e)
-            call_after(announce, panel, f"Playlist konnte nicht geladen werden: {e}")
+            call_after(announce, panel, f"Playlist konnte nicht geladen werden: {short_error(e)}")
             return
         if not editable:
             call_after(announce, panel, "Diese Playlist können Sie nicht bearbeiten.")

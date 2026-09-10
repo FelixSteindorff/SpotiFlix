@@ -49,6 +49,7 @@ from ui.panel_helpers import (
     restore_focus,
     select_only,
     selected_rows,
+    short_error,
     sort_rows,
     start_playback,
 )
@@ -269,7 +270,7 @@ class BrowsePanel(wx.Panel):
 
     def _load_failed(self, error: Exception):
         applog.error("Laden", error)
-        announce(self, f"Fehler: {error}")
+        announce(self, f"Fehler: {short_error(error)}")
         self._go_back()
         wx.MessageBox(f"Fehler: {error}", "Fehler", wx.ICON_ERROR)
 

@@ -68,6 +68,29 @@ def error(context: str, message) -> dict:
     return log("Fehler", context, message)
 
 
+def short_error(error, limit: int = 140, hint: bool = True) -> str:
+    """Kürzt eine Fehlermeldung auf eine ansagbare Zeile.
+
+    Bibliotheken werfen gelegentlich mehrzeilige Meldungen mit Links und
+    Handlungsanweisungen. In der Statusleiste und in der Sprachausgabe ist
+    davon nur der Anfang brauchbar – der vollständige Text steht im Protokoll.
+    ``hint=False`` lässt den Hinweis auf das Protokoll weg (z. B. in der
+    Statusleiste, die ohnehin nicht vorgelesen wird).
+    """
+    if error is None:
+        return "Unbekannter Fehler"
+    text = str(error).strip()
+    if not text:
+        return "Unbekannter Fehler"
+    first_line = " ".join(text.splitlines()[0].split())
+    truncated = len(text.splitlines()) > 1 or len(first_line) > limit
+    if len(first_line) > limit:
+        first_line = first_line[:limit].rstrip(" ,;:.") + " …"
+    if truncated and hint:
+        first_line += " (Details: Protokoll, Strg+Umschalt+G)"
+    return first_line
+
+
 def entries() -> list[dict]:
     """Liefert die gesammelten Einträge, neueste zuerst."""
     with _lock:

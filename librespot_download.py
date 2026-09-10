@@ -21,6 +21,15 @@ from collections import OrderedDict
 
 import config as cfg
 
+# librespot-python liefert vorgenerierte Protobuf-Dateien (_pb2.py) aus einer
+# alten protoc-Version. Ab protobuf 4 verweigert die C++-Implementierung deren
+# Laden ("Descriptors cannot be created directly"), und der Download bricht mit
+# einer für Nutzer unverständlichen Meldung ab. Die reine Python-Implementierung
+# lädt sie weiterhin – sie ist langsamer, aber für Metadaten völlig ausreichend.
+# Das muss gesetzt sein, *bevor* google.protobuf zum ersten Mal importiert wird;
+# librespot wird darum überall erst innerhalb der Funktionen importiert.
+os.environ.setdefault("PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION", "python")
+
 # Unter Windows verhindert CREATE_NO_WINDOW das Aufblitzen eines Konsolen-
 # fensters je ffmpeg-Aufruf (ein Aufruf pro Titel) – das stiehlt sonst den
 # Fokus und wird von NVDA mitgelesen.
@@ -56,6 +65,21 @@ def _require_librespot():
             "Installieren Sie sie mit: pip install librespot\n\n"
             "Oder wählen Sie in den Einstellungen die Download-Methode "
             "'YouTube-Quelle (spotdl)'."
+        )
+    except TypeError as error:
+        # Tritt auf, wenn google.protobuf schon vor dieser Datei importiert
+        # wurde und darum noch mit der C++-Implementierung läuft.
+        if "Descriptors cannot" not in str(error):
+            raise
+        raise RuntimeError(
+            "Die librespot-Bibliothek passt nicht zur installierten "
+            "protobuf-Version.\n\n"
+            "Setzen Sie die Umgebungsvariable "
+            "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python, bevor Sie SpotiFlix "
+            "starten, oder installieren Sie protobuf 3.20:\n"
+            "  pip install \"protobuf<4\"\n\n"
+            "Alternativ in den Einstellungen die Download-Methode "
+            "'YouTube-Quelle (spotdl)' wählen."
         )
 
 

@@ -23,6 +23,7 @@ import threading
 
 import wx
 
+import applog
 from spotify_client import client
 from ui.browse_common import episode_row, track_row
 from ui.context_actions import populate_item_menu
@@ -38,6 +39,7 @@ from ui.panel_helpers import (
     select_only,
     selected_rows,
     set_now_playing,
+    short_error,
     start_playback,
 )
 
@@ -200,7 +202,8 @@ class QueuePanel(wx.Panel):
             try:
                 current, upcoming = client.queue_snapshot()
             except Exception as e:
-                call_after(announce, self, f"Warteschlange konnte nicht geladen werden: {e}")
+                applog.error("Warteschlange", e)
+                call_after(announce, self, f"Warteschlange konnte nicht geladen werden: {short_error(e)}")
                 return
             rows = []
             if current:

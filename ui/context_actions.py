@@ -18,7 +18,7 @@ import applog
 import config as cfg
 import nvda
 from spotify_client import LIBRARY_TYPES, client
-from ui.panel_helpers import announce, call_after, set_status, start_download
+from ui.panel_helpers import announce, call_after, set_status, short_error, start_download
 from ui.browse_common import load_album_tracks, load_playlist_tracks
 
 # Elementtypen, die in die Warteschlange bzw. zu einer Playlist können.
@@ -221,9 +221,10 @@ def add_to_queue(panel: wx.Window, items):
 def _queue_message(name: str, added: int, total: int, failure: Exception | None) -> str:
     """Formuliert die Rückmeldung – sie ist die einzige, die ein Blinder bekommt."""
     if added == 0:
-        return f"{name} konnte nicht zur Warteschlange hinzugefügt werden: {failure}"
+        return f"{name} konnte nicht zur Warteschlange hinzugefügt werden: {short_error(failure)}"
     if added < total:
-        return f"{name} – nur {added} von {total} Titeln eingereiht, dann Fehler: {failure}"
+        return (f"{name} – nur {added} von {total} Titeln eingereiht, "
+                f"dann Fehler: {short_error(failure)}")
     if added == 1:
         return f"{name} zur Warteschlange hinzugefügt"
     return f"{name} – {added} Titel zur Warteschlange hinzugefügt"
@@ -271,7 +272,7 @@ def toggle_library(panel: wx.Window, items):
                        _library_message(items[0]["type"], name, target, changed))
         except Exception as e:
             applog.error("Mediathek", e)
-            call_after(announce, panel, f"Mediathek-Fehler: {e}")
+            call_after(announce, panel, f"Mediathek-Fehler: {short_error(e)}")
             call_after(wx.MessageBox, str(e), "Mediathek-Fehler", wx.ICON_WARNING)
 
     announce(panel, f"Mediathek wird aktualisiert: {name}", verbose=True)
@@ -318,7 +319,7 @@ def add_to_playlist(panel: wx.Window, items):
         except Exception as e:
             applog.error("Playlist", e)
             call_after(wx.MessageBox, str(e), "Fehler", wx.ICON_ERROR)
-            call_after(announce, panel, f"Playlists konnten nicht geladen werden: {e}")
+            call_after(announce, panel, f"Playlists konnten nicht geladen werden: {short_error(e)}")
             return
         call_after(_choose_playlist, panel, items, name, playlists)
 

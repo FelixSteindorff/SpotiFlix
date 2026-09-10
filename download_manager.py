@@ -94,7 +94,7 @@ class DownloadJob:
         if self.status == STATUS_RUNNING:
             return f"{self.name} (läuft …)"
         if self.status == STATUS_FAILED:
-            return f"{self.name} (fehlgeschlagen: {self.error})"
+            return f"{self.name} (fehlgeschlagen: {applog.short_error(self.error, 60, hint=False)})"
         return f"{self.name} ({self.status})"
 
 

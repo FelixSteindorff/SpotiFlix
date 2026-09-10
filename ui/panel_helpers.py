@@ -19,6 +19,7 @@ import wx
 
 import applog
 import config as cfg
+from applog import short_error  # bequem für die Panels
 from download_manager import downloads
 from spotify_client import client
 

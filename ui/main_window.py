@@ -684,7 +684,10 @@ class MainWindow(wx.Frame):
         if job.status == STATUS_DONE:
             call_after(self.announce, f"Download abgeschlossen: {job.name}")
         elif job.status == STATUS_FAILED:
-            call_after(self.announce, f"Download fehlgeschlagen: {job.name} – {job.error}")
+            call_after(
+                self.announce,
+                f"Download fehlgeschlagen: {job.name} – {applog.short_error(job.error)}",
+            )
 
     def _refresh_download_status(self):
         """Schreibt den Stand der Download-Warteschlange in Statusfeld 1."""

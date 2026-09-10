@@ -7,6 +7,7 @@ frischt sich im Sekundentakt auf, solange der Dialog offen ist.
 """
 import wx
 
+import applog
 from download_manager import RETRYABLE, downloads
 from ui.panel_helpers import announce, select_only
 
@@ -84,7 +85,7 @@ class DownloadsDialog(wx.Dialog):
         if job.total:
             return f"{job.done} von {job.total}"
         if job.error:
-            return str(job.error)[:60]
+            return applog.short_error(job.error, 60, hint=False)
         return ""
 
     def _selected_jobs(self) -> list:

@@ -18,6 +18,7 @@ import threading
 
 import wx
 
+import applog
 import config as cfg
 from spotify_client import client
 from ui.browse_common import (
@@ -49,6 +50,7 @@ from ui.panel_helpers import (
     restore_focus,
     select_only,
     selected_rows,
+    short_error,
     sort_rows,
     start_playback,
 )
@@ -255,8 +257,9 @@ class SearchPanel(wx.Panel):
             has_more = self._has_more(results, display_type)
             call_after(self._show_search_results, rows, query, append, has_more, origin)
         except Exception as e:
+            applog.error("Suche", e)
             call_after(wx.MessageBox, f"Fehler: {e}", "Fehler", wx.ICON_ERROR)
-            call_after(announce, self, f"Suche fehlgeschlagen: {e}")
+            call_after(announce, self, f"Suche fehlgeschlagen: {short_error(e)}")
         finally:
             call_after(wx.EndBusyCursor)
             call_after(self.btn_search.Enable, True)
@@ -573,7 +576,8 @@ class SearchPanel(wx.Panel):
     def _load_failed(self, error: Exception):
         if self._nav_stack:
             self._nav_stack.pop()
-        announce(self, f"Fehler: {error}")
+        applog.error("Laden", error)
+        announce(self, f"Fehler: {short_error(error)}")
         wx.MessageBox(f"Fehler: {error}", "Fehler", wx.ICON_ERROR)
 
     def _snapshot(self) -> tuple[list[dict], str, int]:

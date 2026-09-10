@@ -16,7 +16,7 @@ import wx
 
 import applog
 from spotify_client import client
-from ui.panel_helpers import announce, call_after, format_position
+from ui.panel_helpers import announce, call_after, format_position, short_error
 
 #: Erkennt sowohl "spotify:track:ID" als auch open.spotify.com-Links.
 _URI_PATTERN = re.compile(
@@ -61,7 +61,7 @@ def export_rows(panel: wx.Window, rows: list[dict], title: str = "Titelliste"):
             _write_csv(path, rows)
     except Exception as e:
         applog.error("Export", e)
-        announce(panel, f"Export fehlgeschlagen: {e}")
+        announce(panel, f"Export fehlgeschlagen: {short_error(e)}")
         wx.MessageBox(str(e), "Export-Fehler", wx.ICON_ERROR)
         return
 
@@ -131,7 +131,7 @@ def import_playlist(panel: wx.Window, on_done=None):
         uris = read_uris(path)
     except Exception as e:
         applog.error("Import", e)
-        announce(panel, f"Datei konnte nicht gelesen werden: {e}")
+        announce(panel, f"Datei konnte nicht gelesen werden: {short_error(e)}")
         return
     if not uris:
         announce(panel, "In dieser Datei stehen keine Spotify-Titel.")
@@ -165,7 +165,7 @@ def import_playlist(panel: wx.Window, on_done=None):
             added = client.add_tracks_to_playlist(playlist["id"], uris)
         except Exception as e:
             applog.error("Import", e)
-            call_after(announce, panel, f"Import fehlgeschlagen: {e}")
+            call_after(announce, panel, f"Import fehlgeschlagen: {short_error(e)}")
             call_after(wx.MessageBox, str(e), "Import-Fehler", wx.ICON_ERROR)
             return
         applog.info("Import", f"{added} Titel in Playlist {name}")
