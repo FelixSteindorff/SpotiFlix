@@ -48,6 +48,11 @@ python main.py
 - Systemweite Medientasten (Wiedergabe/Pause, Vor, Zurück, Stopp) steuern die App
   auch dann, wenn sie im Hintergrund läuft
 - `Strg+F` filtert jede Liste; die Trefferzahl wird angesagt
+- `F1` listet **alle** Tastenkürzel auf – die Übersicht entsteht zur Laufzeit aus
+  Menü, Panels und Medientasten und ist damit immer aktuell
+- Mehrfachauswahl in allen Listen (`Umschalt+Pfeiltasten`, `Strg+A`); Aktionen
+  wirken auf die gesamte Auswahl und nennen die Anzahl in der Ansage
+- Sortierung in jeder Liste nach Name, Künstler, Album, Dauer oder Datum
 - Der laufende Titel erscheint im Fenstertitel
 
 ## Verwendung
@@ -65,8 +70,24 @@ python main.py
 11. **Playlist anlegen:** Im Dialog `Zu Playlist hinzufügen …` legt `Neue Playlist …` eine neue private Playlist an und wählt sie sofort aus.
 12. **Wiedergabegerät:** `Ctrl+Shift+D` (`Extras > Wiedergabegerät …`) wählt, worauf abgespielt wird – der lokale SpotiFlix-Player oder ein anderes Spotify-Connect-Gerät (Handy, Desktop-App, Lautsprecher). Die Wahl bleibt über den Namen gespeichert.
 13. **Einschlaf-Timer:** `Ctrl+Shift+E` pausiert die Wiedergabe nach 15 bis 90 Minuten; `Ctrl+J` sagt die Restzeit mit an.
-14. **Downloads:** Rechtsklick oder Kontextmenütaste auf Titel, Episode, Album, Künstler oder Playlist. Zielordner, Download-Methode und -Format werden über `Bearbeiten > Einstellungen` festgelegt. Der Download läuft im Hintergrund – der Fortschritt erscheint in der Statusleiste, die App bleibt bedienbar. `Ctrl+Shift+L` zeigt laufende Downloads und bricht ausgewählte ab; `Extras > Download-Ordner öffnen` zeigt die Dateien im Explorer.
+14. **Downloads:** Rechtsklick oder Kontextmenütaste auf Titel, Episode, Album, Künstler oder Playlist. Zielordner, Download-Methode und -Format werden über `Bearbeiten > Einstellungen` festgelegt. Aufträge laufen über eine **Warteschlange**: Es arbeiten nur so viele gleichzeitig, wie eingestellt sind (Vorgabe 2), der Rest wartet. `Ctrl+Shift+L` öffnet die Warteschlange – dort lassen sich Aufträge abbrechen, fehlgeschlagene wiederholen und erledigte ausblenden. `Extras > Download-Ordner öffnen` zeigt die Dateien im Explorer.
 15. **Status:** Normale Aktionen wie Laden, Wiedergabe und abgeschlossene Downloads erscheinen in der Statusleiste; laufende Downloads im rechten Statusfeld.
+16. **Playlists bearbeiten:** In einer geöffneten Playlist entfernt `Entf` die markierten Titel, `Strg+Pfeil hoch/runter` verschiebt einen Titel, und `F2` öffnet Name **und Beschreibung** zum Bearbeiten. Es wird positionsgenau gelöscht – steht ein Titel mehrfach in der Playlist, verschwindet nur der markierte. Die Ansicht lädt danach automatisch neu (`F5` geht auch von Hand).
+17. **Schnellzugriffe:** `Als Schnellzugriff merken` im Kontextmenü legt Album, Künstler, Playlist oder Podcast auf einen der neun Plätze; `Strg+Umschalt+1` … `9` öffnen sie direkt. Verwalten über `Navigation > Schnellzugriffe verwalten …`.
+18. **Export/Import:** `Strg+E` speichert die angezeigte Liste als CSV (für Tabellen) oder M3U8 – beides mit Spotify-URIs. `Strg+Umschalt+I` liest URIs oder `open.spotify.com`-Links aus einer beliebigen Textdatei und legt daraus eine neue Playlist an.
+19. **Protokoll:** `Strg+Umschalt+G` zeigt gesammelte Fehler und Ereignisse mit Zeitstempel; kopierbar in die Zwischenablage. Die Datei liegt unter `~/.spotiflix.log` und wird rotiert.
+
+## Einstellungen
+
+`Bearbeiten > Einstellungen` (`Ctrl+,`) enthält neben Credentials und Download-Ordner:
+
+- **Wiedergabequalität** und **Startlautstärke** des lokalen Players
+- **Lautstärke normalisieren** – gleicht Pegelunterschiede zwischen Alben aus
+- **Ansagen** – „Ausführlich" (mit Zwischenmeldungen) oder „Kurz" (nur Ergebnisse und Fehler)
+- **Autoplay**, **Download-Methode**, **-Format**, **-Qualität** und **-Ordnerstruktur**
+- **Gleichzeitige Downloads** (1–4)
+
+Änderungen an Qualität, Startlautstärke oder Normalisierung stoppen den lokalen Player – librespot liest diese Werte nur beim Start.
 
 ## Warteschlange
 
