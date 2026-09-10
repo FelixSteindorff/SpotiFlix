@@ -14,7 +14,9 @@ Tastenkürzel in der Liste:
   * Enter            – abspielen (ab markiertem Titel bzw. den Titel selbst)
   * Strg+Pfeil hoch  – Titel nach oben (nur „Meine Liste")
   * Strg+Pfeil runter– Titel nach unten (nur „Meine Liste")
-  * Entf             – Titel entfernen (nur „Meine Liste")
+  * Entf             – markierte Titel entfernen (nur „Meine Liste")
+  * Strg+A           – alles markieren
+  * Strg+E           – Liste exportieren
   * F5               – Spotify-Warteschlange neu laden
 """
 import threading
@@ -24,6 +26,7 @@ import wx
 from spotify_client import client
 from ui.browse_common import episode_row, track_row
 from ui.context_actions import populate_item_menu
+from ui.list_io import export_rows
 from ui.panel_helpers import (
     announce,
     call_after,
@@ -32,6 +35,8 @@ from ui.panel_helpers import (
     focus_origin,
     mark_local_player_running,
     restore_focus,
+    select_only,
+    selected_rows,
     set_now_playing,
     start_playback,
 )
@@ -43,6 +48,16 @@ class QueuePanel(wx.Panel):
     VIEWS = [("local", "Meine Liste"), ("spotify", "Spotify-Warteschlange")]
     #: Elementtypen, für die ein Kontextmenü angeboten wird.
     CONTEXT_TYPES = {"track", "episode"}
+    #: Tasten, die dieses Panel selbst behandelt (für die Kürzelübersicht).
+    LOCAL_SHORTCUTS = [
+        ("Eingabe", "Ab markiertem Titel abspielen"),
+        ("Strg+Pfeil hoch/runter", "Titel in „Meine Liste“ verschieben"),
+        ("Entf", "Markierte Titel entfernen"),
+        ("Strg+A", "Alles markieren"),
+        ("Strg+E", "Liste exportieren"),
+        ("F5", "Spotify-Warteschlange neu laden"),
+        ("Anwendungstaste, Umschalt+F10", "Kontextmenü zum markierten Titel"),
+    ]
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -68,7 +83,7 @@ class QueuePanel(wx.Panel):
         self.view_choice.Bind(wx.EVT_RADIOBOX, self._on_view_changed)
         sizer.Add(self.view_choice, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, 10)
 
-        self.list = wx.ListCtrl(self, style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
+        self.list = wx.ListCtrl(self, style=wx.LC_REPORT)
         # Zugänglicher Name: NVDA meldet sonst nur „Liste".
         self.list.SetName("Warteschlange")
         self.list.InsertColumn(0, "Titel", width=360)
@@ -152,9 +167,7 @@ class QueuePanel(wx.Panel):
         self.btn_reload.Enable(self.view == "spotify")
         if rows:
             target = 0 if select is None or select < 0 else max(0, min(select, len(rows) - 1))
-            self.list.Select(target)
-            self.list.Focus(target)
-            self.list.EnsureVisible(target)
+            select_only(self.list, target)
 
     def _details(self, row: dict) -> str:
         details = row.get("details")
@@ -171,6 +184,10 @@ class QueuePanel(wx.Panel):
         if index == wx.NOT_FOUND or index >= len(rows):
             return None
         return rows[index]
+
+    def get_selected_items(self) -> list[dict]:
+        """Alle markierten Titel – Grundlage für Aktionen auf mehreren."""
+        return selected_rows(self.list, self.rows)
 
     # -- Spotify-Warteschlange lesen -----------------------------------------
 
@@ -233,12 +250,20 @@ class QueuePanel(wx.Panel):
     def remove_selected(self):
         if not self._require_local():
             return
-        index = self.list.GetFirstSelected()
-        if index == wx.NOT_FOUND or index >= len(self.items):
+        indices = sorted(
+            (index for index in range(self.list.GetItemCount()) if self.list.IsSelected(index)),
+            reverse=True,
+        )
+        if not indices:
             return
-        removed = self.items.pop(index)
-        self._render(select=index)
-        announce(self, f"{removed.get('name', '')} aus der Warteschlange entfernt")
+        removed = [self.items.pop(index) for index in indices if index < len(self.items)]
+        if not removed:
+            return
+        self._render(select=min(indices))
+        if len(removed) == 1:
+            announce(self, f"{removed[0].get('name', '')} aus der Warteschlange entfernt")
+        else:
+            announce(self, f"{len(removed)} Titel aus der Warteschlange entfernt")
 
     def clear(self):
         if not self._require_local():
@@ -293,8 +318,22 @@ class QueuePanel(wx.Panel):
 
     # -- Tastatur / Kontextmenü ----------------------------------------------
 
+    def _select_all(self):
+        for index in range(self.list.GetItemCount()):
+            self.list.Select(index)
+        announce(self, f"{self.list.GetSelectedItemCount()} Titel markiert")
+
+    def _export_view(self):
+        export_rows(self, self.rows, self._view_label())
+
     def _on_key_down(self, event):
         key = event.GetKeyCode()
+        if event.ControlDown() and key in (ord("A"), ord("a")):
+            self._select_all()
+            return
+        if event.ControlDown() and key in (ord("E"), ord("e")):
+            self._export_view()
+            return
         if event.ControlDown() and key == wx.WXK_UP:
             self.move_selected(-1)
             return
@@ -310,11 +349,11 @@ class QueuePanel(wx.Panel):
         event.Skip()
 
     def _on_context_menu(self, event):
-        item = self.get_selected_item()
-        if not item or item.get("type") not in self.CONTEXT_TYPES:
+        items = self.get_selected_items()
+        if not items or not {item.get("type") for item in items} & self.CONTEXT_TYPES:
             return
         menu = wx.Menu()
-        populate_item_menu(self, menu, item)
+        populate_item_menu(self, menu, items)
         position = context_menu_position(self.list, event, self.list.GetFirstSelected())
         self.list.PopupMenu(menu, position)
         menu.Destroy()

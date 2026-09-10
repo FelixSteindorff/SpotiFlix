@@ -2,14 +2,20 @@
 Gemeinsame Kontextmenü-Aktionen für die Listenpanels.
 
 Stellt das Aufbauen des Kontextmenüs sowie die Aktionen „Zur Warteschlange
-hinzufügen", „Zu Playlist hinzufügen", „Öffnen", „Zum Künstler" und „Zum Album"
-bereit – einmal zentral, damit Mediathek, Suche und Entdecken identisch
-funktionieren.
+hinzufügen", „Zu Playlist hinzufügen", „In Mediathek speichern", „Öffnen",
+„Zum Künstler" und „Zum Album" bereit – einmal zentral, damit Mediathek, Suche,
+Entdecken und Warteschlange identisch funktionieren.
+
+Alle Aktionen arbeiten auf einer **Liste** von Einträgen: Die Panels erlauben
+Mehrfachauswahl, und was für einen Titel gilt, soll auch für zwanzig gelten.
+Ein einzelnes Element darf weiterhin direkt übergeben werden.
 """
 import threading
 
 import wx
 
+import applog
+import config as cfg
 import nvda
 from spotify_client import LIBRARY_TYPES, client
 from ui.panel_helpers import announce, call_after, set_status, start_download
@@ -21,14 +27,23 @@ PLAYLISTABLE = {"track", "episode", "album", "playlist"}
 # Elementtypen, die heruntergeladen werden können (Episoden unterstützt
 # librespot_download vollständig).
 DOWNLOADABLE = {"track", "episode", "album", "artist", "playlist"}
+# Elementtypen, die sich als Schnellzugriff merken lassen.
+BOOKMARKABLE = {"album", "artist", "playlist", "show"}
 
 # Menübeschriftung fürs Speichern/Folgen je Elementtyp.
 _LIBRARY_LABELS = {
-    "artist": "Künstler folgen / nicht mehr folgen\tStrg+S",
-    "playlist": "Playlist speichern / entfernen\tStrg+S",
-    "show": "Podcast abonnieren / abbestellen\tStrg+S",
+    "artist": "Künstler folgen / nicht mehr folgen",
+    "playlist": "Playlist speichern / entfernen",
+    "show": "Podcast abonnieren / abbestellen",
 }
-_LIBRARY_DEFAULT_LABEL = "In Mediathek speichern / entfernen\tStrg+S"
+_LIBRARY_DEFAULT_LABEL = "In Mediathek speichern / entfernen"
+
+
+def as_items(items) -> list[dict]:
+    """Nimmt einen Eintrag oder eine Liste und liefert immer eine Liste."""
+    if isinstance(items, dict):
+        items = [items]
+    return [item for item in (items or []) if item]
 
 
 def get_artist_ref(item: dict) -> tuple[str | None, str]:
@@ -56,45 +71,59 @@ def get_album_ref(item: dict) -> tuple[str | None, str]:
     return None, ""
 
 
-def populate_item_menu(panel: wx.Window, menu: wx.Menu, item: dict):
-    """Füllt ein Kontextmenü passend zum Elementtyp und verknüpft die Aktionen."""
-    item_type = item.get("type")
+def populate_item_menu(panel: wx.Window, menu: wx.Menu, items):
+    """Füllt ein Kontextmenü passend zur Auswahl und verknüpft die Aktionen."""
+    items = as_items(items)
+    if not items:
+        return
+    primary = items[0]
+    item_type = primary.get("type")
+    single = len(items) == 1
+    count = f" ({len(items)})" if not single else ""
+    types = {entry.get("type") for entry in items}
 
-    # „Öffnen": Inhalt von Album/Künstler/Playlist anzeigen.
-    if item_type == "album" and hasattr(panel, "goto_album"):
-        _add(menu, "Album öffnen", lambda: panel.goto_album(item))
-    elif item_type == "artist" and hasattr(panel, "goto_artist"):
-        _add(menu, "Künstler öffnen", lambda: panel.goto_artist(item))
-    elif item_type == "playlist" and hasattr(panel, "goto_playlist"):
-        _add(menu, "Playlist öffnen", lambda: panel.goto_playlist(item))
+    # „Öffnen" ergibt nur für genau einen Eintrag Sinn.
+    if single:
+        if item_type == "album" and hasattr(panel, "goto_album"):
+            _add(menu, "Album öffnen", lambda: panel.goto_album(primary))
+        elif item_type == "artist" and hasattr(panel, "goto_artist"):
+            _add(menu, "Künstler öffnen", lambda: panel.goto_artist(primary))
+        elif item_type == "playlist" and hasattr(panel, "goto_playlist"):
+            _add(menu, "Playlist öffnen", lambda: panel.goto_playlist(primary))
+        elif item_type == "show" and hasattr(panel, "goto_show"):
+            _add(menu, "Podcast öffnen", lambda: panel.goto_show(primary))
 
-    if item_type == "show" and hasattr(panel, "goto_show"):
-        _add(menu, "Podcast öffnen", lambda: panel.goto_show(item))
+    if types & DOWNLOADABLE:
+        downloadable = [entry for entry in items if entry.get("type") in DOWNLOADABLE]
+        _add(menu, f"Herunterladen{count}", lambda: start_download(panel, downloadable))
 
-    if item_type in LIBRARY_TYPES and item.get("id"):
-        _add(
-            menu,
-            _LIBRARY_LABELS.get(item_type, _LIBRARY_DEFAULT_LABEL),
-            lambda: toggle_library(panel, item),
-        )
+    if types & QUEUEABLE:
+        _add(menu, f"Zur Warteschlange hinzufügen{count}\tStrg+Q",
+             lambda: add_to_queue(panel, items))
 
-    if item_type in DOWNLOADABLE:
-        _add(menu, "Herunterladen", lambda: start_download(panel, item))
+    if types & PLAYLISTABLE:
+        _add(menu, f"Zu Playlist hinzufügen …{count}\tStrg+Umschalt+P",
+             lambda: add_to_playlist(panel, items))
 
-    if item_type in QUEUEABLE:
-        _add(menu, "Zur Warteschlange hinzufügen\tStrg+Q", lambda: add_to_queue(panel, item))
+    if types & LIBRARY_TYPES:
+        label = _LIBRARY_LABELS.get(item_type, _LIBRARY_DEFAULT_LABEL) if single else "In Mediathek speichern / entfernen"
+        _add(menu, f"{label}{count}\tStrg+S", lambda: toggle_library(panel, items))
 
-    if item_type in PLAYLISTABLE:
-        _add(menu, "Zu Playlist hinzufügen …\tStrg+Umschalt+P", lambda: add_to_playlist(panel, item))
+    if single and item_type in BOOKMARKABLE and primary.get("id"):
+        _add(menu, "Als Schnellzugriff merken", lambda: add_bookmark(panel, primary))
 
     # Beziehungs-Navigation für Titel/Episoden: zu deren Künstler bzw. Album.
-    if item_type in {"track", "episode"}:
-        artist_id, _name = get_artist_ref(item)
+    if single and item_type in {"track", "episode"}:
+        artist_id, _name = get_artist_ref(primary)
         if artist_id and hasattr(panel, "goto_artist"):
-            _add(menu, "Zum Künstler", lambda: panel.goto_artist(item))
-        album_id, _name = get_album_ref(item)
+            _add(menu, "Zum Künstler", lambda: panel.goto_artist(primary))
+        album_id, _name = get_album_ref(primary)
         if album_id and hasattr(panel, "goto_album"):
-            _add(menu, "Zum Album", lambda: panel.goto_album(item))
+            _add(menu, "Zum Album", lambda: panel.goto_album(primary))
+
+    if hasattr(panel, "_export_view"):
+        menu.AppendSeparator()
+        _add(menu, "Angezeigte Liste exportieren …\tStrg+E", panel._export_view)
 
 
 def _add(menu: wx.Menu, label: str, handler):
@@ -116,6 +145,27 @@ def _resolve_rows(sp, item: dict) -> list[dict]:
     return []
 
 
+def _resolve_many(sp, items: list[dict]) -> list[dict]:
+    """Löst mehrere Elemente auf und entfernt Doppelte (URI-gleich)."""
+    rows = []
+    seen = set()
+    for item in items:
+        for row in _resolve_rows(sp, item):
+            uri = row.get("uri")
+            if not uri or uri in seen:
+                continue
+            seen.add(uri)
+            rows.append(row)
+    return rows
+
+
+def _selection_name(items: list[dict]) -> str:
+    """Beschreibt die Auswahl für Ansagen."""
+    if len(items) == 1:
+        return items[0].get("name", "")
+    return f"{len(items)} Einträge"
+
+
 def _enqueue_in_panel(panel: wx.Window, rows: list[dict]):
     """Trägt Titel in die sichtbare Warteschlange (Tab) ein, falls vorhanden."""
     frame = panel.GetTopLevelParent()
@@ -123,12 +173,13 @@ def _enqueue_in_panel(panel: wx.Window, rows: list[dict]):
         frame.enqueue(rows)
 
 
-def add_to_queue(panel: wx.Window, item: dict):
-    """Reiht Titel (oder alle Titel eines Albums/Playlist) im Hintergrund ein."""
-    name = item.get("name", "")
-    if item.get("type") not in QUEUEABLE:
+def add_to_queue(panel: wx.Window, items):
+    """Reiht Titel (oder alle Titel von Alben/Playlists) im Hintergrund ein."""
+    items = [item for item in as_items(items) if item.get("type") in QUEUEABLE]
+    if not items:
         announce(panel, "Dieses Element kann nicht in die Warteschlange.")
         return
+    name = _selection_name(items)
 
     def worker():
         try:
@@ -136,7 +187,7 @@ def add_to_queue(panel: wx.Window, item: dict):
             if not sp:
                 call_after(wx.MessageBox, "Zuerst autorisieren!", "Fehler", wx.ICON_ERROR)
                 return
-            rows = [row for row in _resolve_rows(sp, item) if row.get("uri")]
+            rows = [row for row in _resolve_many(sp, items) if row.get("uri")]
             if not rows:
                 call_after(announce, panel, "Keine Titel zum Hinzufügen gefunden.")
                 return
@@ -156,11 +207,14 @@ def add_to_queue(panel: wx.Window, item: dict):
                 if len(rows) > 20 and added % 20 == 0:
                     call_after(set_status, panel, f"{name}: {added} von {len(rows)} eingereiht …")
             call_after(_enqueue_in_panel, panel, rows[:added])
+            if failure:
+                applog.error("Warteschlange", failure)
             call_after(announce, panel, _queue_message(name, added, len(rows), failure))
         except Exception as e:
+            applog.error("Warteschlange", e)
             call_after(wx.MessageBox, str(e), "Warteschlange-Fehler", wx.ICON_WARNING)
 
-    announce(panel, f"Füge zur Warteschlange hinzu: {name}")
+    announce(panel, f"Füge zur Warteschlange hinzu: {name}", verbose=True)
     threading.Thread(target=worker, daemon=True).start()
 
 
@@ -175,8 +229,10 @@ def _queue_message(name: str, added: int, total: int, failure: Exception | None)
     return f"{name} – {added} Titel zur Warteschlange hinzugefügt"
 
 
-def _library_message(item_type: str, name: str, saved: bool) -> str:
+def _library_message(item_type: str, name: str, saved: bool, count: int = 1) -> str:
     """Formuliert die Rückmeldung zum Speichern/Folgen."""
+    if count > 1:
+        return f"{count} Einträge {'gespeichert' if saved else 'entfernt'}"
     if item_type == "artist":
         return f"Sie folgen jetzt {name}" if saved else f"Sie folgen {name} nicht mehr"
     if item_type == "show":
@@ -186,28 +242,35 @@ def _library_message(item_type: str, name: str, saved: bool) -> str:
     return f"{name} aus der Mediathek entfernt"
 
 
-def toggle_library(panel: wx.Window, item: dict):
-    """Speichert ein Element in der Mediathek – oder entfernt es wieder.
+def toggle_library(panel: wx.Window, items):
+    """Speichert Elemente in der Mediathek – oder entfernt sie wieder.
 
-    Der aktuelle Zustand wird zuerst abgefragt, damit dieselbe Taste beides
-    kann; beides läuft im Hintergrund, damit die UI nicht blockiert.
+    Der Zustand des ersten Eintrags gibt die Richtung vor; bei einer
+    Mehrfachauswahl bekommen alle dieselbe Behandlung. Das ist vorhersagbar,
+    auch wenn man die Liste nicht sieht.
     """
-    item_type = item.get("type")
-    item_id = item.get("id")
-    name = item.get("name", "")
-    if item_type not in LIBRARY_TYPES or not item_id:
+    items = [item for item in as_items(items)
+             if item.get("type") in LIBRARY_TYPES and item.get("id")]
+    if not items:
         announce(panel, "Dieses Element kann nicht in der Mediathek gespeichert werden.")
         return
+    name = _selection_name(items)
 
     def worker():
         try:
-            saved = client.is_in_library(item_type, item_id)
+            saved = client.is_in_library(items[0]["type"], items[0]["id"])
             if saved is None:
                 call_after(announce, panel, "Zuerst autorisieren!")
                 return
-            client.set_in_library(item_type, item_id, not saved)
-            call_after(announce, panel, _library_message(item_type, name, not saved))
+            target = not saved
+            changed = 0
+            for item in items:
+                client.set_in_library(item["type"], item["id"], target)
+                changed += 1
+            call_after(announce, panel,
+                       _library_message(items[0]["type"], name, target, changed))
         except Exception as e:
+            applog.error("Mediathek", e)
             call_after(announce, panel, f"Mediathek-Fehler: {e}")
             call_after(wx.MessageBox, str(e), "Mediathek-Fehler", wx.ICON_WARNING)
 
@@ -215,30 +278,54 @@ def toggle_library(panel: wx.Window, item: dict):
     threading.Thread(target=worker, daemon=True).start()
 
 
-def add_to_playlist(panel: wx.Window, item: dict):
-    """Öffnet die Playlist-Auswahl und fügt Titel (oder ein ganzes Album) hinzu."""
-    name = item.get("name", "")
-    if item.get("type") not in PLAYLISTABLE:
+def add_bookmark(panel: wx.Window, item: dict):
+    """Merkt ein Album, einen Künstler, eine Playlist oder einen Podcast als Schnellzugriff."""
+    if item.get("type") not in BOOKMARKABLE or not item.get("id"):
+        announce(panel, "Dieses Element lässt sich nicht als Schnellzugriff merken.")
+        return
+    bookmarks = cfg.get_bookmarks()
+    if any(entry["id"] == item["id"] for entry in bookmarks):
+        announce(panel, f"{item.get('name', '')} ist bereits als Schnellzugriff gemerkt.")
+        return
+    if len(bookmarks) >= cfg.MAX_BOOKMARKS:
+        announce(panel, f"Es sind schon {cfg.MAX_BOOKMARKS} Schnellzugriffe belegt – "
+                        "bitte zuerst einen entfernen (Extras > Schnellzugriffe).")
+        return
+    bookmarks.append({"type": item["type"], "id": item["id"], "name": item.get("name", "")})
+    cfg.save_bookmarks(bookmarks)
+    frame = panel.GetTopLevelParent()
+    if hasattr(frame, "refresh_bookmarks"):
+        frame.refresh_bookmarks()
+    announce(panel, f"Schnellzugriff {len(bookmarks)}: {item.get('name', '')} "
+                    f"(Strg+Umschalt+{len(bookmarks)})")
+
+
+def add_to_playlist(panel: wx.Window, items):
+    """Öffnet die Playlist-Auswahl und fügt die Titel hinzu."""
+    items = [item for item in as_items(items) if item.get("type") in PLAYLISTABLE]
+    if not items:
         announce(panel, "Dieses Element kann nicht zu einer Playlist hinzugefügt werden.")
         return
+    name = _selection_name(items)
 
     # editable_playlists() paginiert alle Playlists (50 pro Request) – bei 300
     # Playlists sind das 6 Requests. Das darf den UI-Thread nicht blockieren.
-    announce(panel, "Lade Playlists …")
+    announce(panel, "Lade Playlists …", verbose=True)
 
     def load_playlists():
         try:
             playlists = client.editable_playlists()
         except Exception as e:
+            applog.error("Playlist", e)
             call_after(wx.MessageBox, str(e), "Fehler", wx.ICON_ERROR)
             call_after(announce, panel, f"Playlists konnten nicht geladen werden: {e}")
             return
-        call_after(_choose_playlist, panel, item, name, playlists)
+        call_after(_choose_playlist, panel, items, name, playlists)
 
     threading.Thread(target=load_playlists, daemon=True).start()
 
 
-def _choose_playlist(panel: wx.Window, item: dict, name: str, playlists: list[dict]):
+def _choose_playlist(panel: wx.Window, items: list[dict], name: str, playlists: list[dict]):
     """Zeigt die Playlist-Auswahl und startet danach das Hinzufügen."""
     if not playlists:
         announce(panel, "Keine bearbeitbaren Playlists gefunden.")
@@ -269,8 +356,7 @@ def _choose_playlist(panel: wx.Window, item: dict, name: str, playlists: list[di
             if not sp:
                 call_after(wx.MessageBox, "Zuerst autorisieren!", "Fehler", wx.ICON_ERROR)
                 return
-            rows = _resolve_rows(sp, item)
-            uris = [row["uri"] for row in rows if row.get("uri")]
+            uris = [row["uri"] for row in _resolve_many(sp, items) if row.get("uri")]
             if not uris:
                 call_after(announce, panel, "Keine Titel zum Hinzufügen gefunden.")
                 return
@@ -281,6 +367,7 @@ def _choose_playlist(panel: wx.Window, item: dict, name: str, playlists: list[di
                 message = f"{name} – {added} Titel zu Playlist {playlist_name} hinzugefügt"
             call_after(announce, panel, message)
         except Exception as e:
+            applog.error("Playlist", e)
             call_after(wx.MessageBox, str(e), "Playlist-Fehler", wx.ICON_WARNING)
 
     threading.Thread(target=worker, daemon=True).start()
@@ -350,6 +437,7 @@ class PlaylistChooserDialog(wx.Dialog):
             try:
                 playlist = client.create_playlist(name)
             except Exception as e:
+                applog.error("Playlist", e)
                 call_after(wx.MessageBox, str(e), "Playlist-Fehler", wx.ICON_ERROR)
                 call_after(self.btn_new.Enable, True)
                 return

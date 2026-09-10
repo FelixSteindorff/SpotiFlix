@@ -10,6 +10,9 @@ Komfort in der Liste:
   * `Strg+F` filtert die angezeigten Treffer, Escape hebt den Filter auf.
   * „Mehr laden" holt die nächsten 20 Treffer, solange Spotify welche hat.
   * Das Suchfeld merkt sich die letzten Suchbegriffe (Pfeiltasten im Feld).
+  * Mehrfachauswahl: Aktionen wirken auf alle markierten Treffer.
+  * Eine geöffnete Playlist lässt sich hier genauso bearbeiten wie in der
+    Mediathek (Entf, Strg+Pfeiltasten, F2).
 """
 import threading
 
@@ -33,7 +36,9 @@ from ui.browse_common import (
     track_row,
 )
 from ui.context_actions import get_album_ref, get_artist_ref, populate_item_menu
+from ui.list_io import export_rows
 from ui.panel_helpers import (
+    SORT_MODES,
     announce,
     call_after,
     context_menu_position,
@@ -42,8 +47,12 @@ from ui.panel_helpers import (
     focus_origin,
     playback_args,
     restore_focus,
+    select_only,
+    selected_rows,
+    sort_rows,
     start_playback,
 )
+from ui.playlist_edit import edit_details, move_track, playlist_id_for, remove_tracks
 
 #: Wie viele Treffer je Abschnitt und Ladevorgang geholt werden.
 SEARCH_PAGE_SIZE = 20
@@ -93,6 +102,21 @@ class SearchPanel(wx.Panel):
 
     #: Elementtypen, für die ein Kontextmenü angeboten wird.
     CONTEXT_TYPES = {"track", "episode", "album", "artist", "playlist", "show"}
+    #: Tasten, die dieses Panel selbst behandelt (für die Kürzelübersicht).
+    LOCAL_SHORTCUTS = [
+        ("Eingabe", "Treffer öffnen bzw. abspielen"),
+        ("Rücktaste, Alt+Pfeil links, Esc", "Zur vorherigen Ansicht"),
+        ("Strg+F", "Trefferliste filtern"),
+        ("Esc", "Filter aufheben"),
+        ("F5", "Ansicht neu laden"),
+        ("Strg+A", "Alles markieren"),
+        ("Umschalt+Pfeiltasten", "Mehrere Treffer markieren"),
+        ("Pfeil hoch/runter im Suchfeld", "Frühere Suchbegriffe"),
+        ("Entf", "Markierte Titel aus der geöffneten Playlist entfernen"),
+        ("Strg+Pfeil hoch/runter", "Titel in der geöffneten Playlist verschieben"),
+        ("F2", "Playlist umbenennen und Beschreibung bearbeiten"),
+        ("Strg+E", "Angezeigte Liste exportieren"),
+    ]
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -122,6 +146,14 @@ class SearchPanel(wx.Panel):
         sizer.Add(type_label, 0, wx.TOP, 5)
         sizer.Add(self.type_combo, 1, wx.ALL | wx.EXPAND, 10)
 
+        sort_label = wx.StaticText(self, label="Sortierung:")
+        self.sort_choice = wx.Choice(self, choices=[label for _key, label in SORT_MODES])
+        self.sort_choice.SetName("Sortierung")
+        self.sort_choice.SetSelection(0)
+        self.sort_choice.Bind(wx.EVT_CHOICE, self._on_sort_choice)
+        sizer.Add(sort_label, 0, wx.TOP, 5)
+        sizer.Add(self.sort_choice, 0, wx.ALL | wx.EXPAND, 10)
+
         button_box = wx.BoxSizer(wx.HORIZONTAL)
         self.btn_search = wx.Button(self, label="Suchen")
         self.btn_search.Bind(wx.EVT_BUTTON, self._on_search)
@@ -135,7 +167,7 @@ class SearchPanel(wx.Panel):
         sizer.Add(button_box, 0, wx.ALL | wx.EXPAND, 5)
 
         result_label = wx.StaticText(self, label="Suchergebnisse:")
-        self.result_list = wx.ListCtrl(self, style=wx.LC_REPORT | wx.LC_SINGLE_SEL)
+        self.result_list = wx.ListCtrl(self, style=wx.LC_REPORT)
         self.result_list.InsertColumn(0, "Name", width=400)
         self.result_list.InsertColumn(1, "Details", width=300)
         # Zugänglicher Name: NVDA meldet sonst nur „Liste". Er wechselt mit der
@@ -159,7 +191,10 @@ class SearchPanel(wx.Panel):
         self._all_rows: list[dict] = []
         self.results_data: list[dict] = []
         self._filter = ""
+        self.sort_mode = "default"
         self._current_title = "Suchergebnisse"
+        # Geöffnete Ansicht (Album/Playlist/…) für F5.
+        self._current_fetch: tuple | None = None
         # Laufende Suche für „Mehr laden".
         self._query = ""
         self._display_type = ""
@@ -257,6 +292,7 @@ class SearchPanel(wx.Panel):
         else:
             self._nav_stack = []
             self._filter = ""
+            self._current_fetch = None
             self._set_rows(rows, title)
             cfg.add_search_history(query)
             self._refresh_history()
@@ -277,9 +313,15 @@ class SearchPanel(wx.Panel):
         self._current_title = title
         self._render(select)
 
+    def _on_sort_choice(self, event):
+        self.sort_mode, label = SORT_MODES[self.sort_choice.GetSelection()]
+        selected = self.result_list.GetFirstSelected()
+        self._render(max(0, selected))
+        announce(self, f"Sortierung: {label}")
+
     def _render(self, select: int = 0):
-        """Zeichnet die (ggf. gefilterten) Zeilen und aktualisiert den Listennamen."""
-        self.results_data = filter_rows(self._all_rows, self._filter)
+        """Zeichnet die (ggf. gefilterten und sortierten) Zeilen neu."""
+        self.results_data = sort_rows(filter_rows(self._all_rows, self._filter), self.sort_mode)
         self.result_list.DeleteAllItems()
         for row in self.results_data:
             prefix = self._LABEL_PREFIX.get(row.get("type"), "")
@@ -293,16 +335,17 @@ class SearchPanel(wx.Panel):
         self.result_list.SetName(name)
         self.btn_play.Enable(bool(self.results_data))
         if self.results_data:
-            target = max(0, min(select, len(self.results_data) - 1))
-            self.result_list.Select(target)
-            self.result_list.Focus(target)
-            self.result_list.EnsureVisible(target)
+            select_only(self.result_list, max(0, min(select, len(self.results_data) - 1)))
 
     def get_selected_item(self) -> dict | None:
         selected = self.result_list.GetFirstSelected()
         if selected == wx.NOT_FOUND or selected >= len(self.results_data):
             return None
         return self.results_data[selected]
+
+    def get_selected_items(self) -> list[dict]:
+        """Alle markierten Treffer – Grundlage für Aktionen auf mehreren."""
+        return selected_rows(self.result_list, self.results_data)
 
     # -- Filtern -------------------------------------------------------------
 
@@ -347,8 +390,27 @@ class SearchPanel(wx.Panel):
 
     def _on_key_down(self, event):
         key = event.GetKeyCode()
-        if event.ControlDown() and key in (ord("F"), ord("f")):
+        control = event.ControlDown()
+        if control and key in (ord("F"), ord("f")):
             self._prompt_filter()
+            return
+        if control and key in (ord("A"), ord("a")):
+            self._select_all()
+            return
+        if control and key in (ord("E"), ord("e")):
+            self._export_view()
+            return
+        if key == wx.WXK_F5:
+            self._reload_current()
+            return
+        if key == wx.WXK_F2:
+            self._edit_playlist()
+            return
+        if key == wx.WXK_DELETE:
+            self._remove_from_playlist()
+            return
+        if control and key in (wx.WXK_UP, wx.WXK_DOWN):
+            self._move_in_playlist(-1 if key == wx.WXK_UP else 1)
             return
         # Escape hebt zuerst einen aktiven Filter auf, erst dann geht es zurück.
         if key == wx.WXK_ESCAPE and self._filter:
@@ -361,12 +423,65 @@ class SearchPanel(wx.Panel):
             return
         event.Skip()
 
-    def _on_context_menu(self, event):
+    def _select_all(self):
+        for index in range(self.result_list.GetItemCount()):
+            self.result_list.Select(index)
+        announce(self, f"{self.result_list.GetSelectedItemCount()} Treffer markiert")
+
+    # -- Playlist bearbeiten -------------------------------------------------
+
+    def _playlist_id(self) -> str | None:
+        """Liefert die Playlist der aktuellen Ansicht (sonst None)."""
+        return playlist_id_for(self.results_data)
+
+    def _remove_from_playlist(self):
+        playlist_id = self._playlist_id()
+        if not playlist_id:
+            announce(self, "Diese Ansicht ist keine bearbeitbare Playlist.")
+            return
+        remove_tracks(self, playlist_id, self.get_selected_items(), on_done=self._reload_current)
+
+    def _move_in_playlist(self, direction: int):
+        playlist_id = self._playlist_id()
+        if not playlist_id:
+            announce(self, "Diese Ansicht ist keine bearbeitbare Playlist.")
+            return
         item = self.get_selected_item()
-        if not item or item.get("type") not in self.CONTEXT_TYPES:
+        if item:
+            move_track(self, playlist_id, item, direction, on_done=self._reload_current)
+
+    def _edit_playlist(self):
+        playlist_id = self._playlist_id()
+        if not playlist_id:
+            announce(self, "Diese Ansicht ist keine bearbeitbare Playlist.")
+            return
+        edit_details(self, playlist_id, on_done=self._reload_current)
+
+    def _export_view(self):
+        export_rows(self, self.results_data, self._current_title)
+
+    def _reload_current(self):
+        """Lädt die aktuelle Ansicht neu (F5)."""
+        if self._current_fetch is None:
+            if self._query:
+                sp = client.get()
+                if sp:
+                    self._offset = 0
+                    self._run_search(sp, append=False)
+                return
+            announce(self, "Diese Ansicht lässt sich nicht neu laden.")
+            return
+        title, fetch = self._current_fetch
+        self._load_view(title, fetch, remember=False)
+
+    def _on_context_menu(self, event):
+        items = self.get_selected_items()
+        if not items:
+            return
+        if not {item.get("type") for item in items} & self.CONTEXT_TYPES:
             return
         menu = wx.Menu()
-        populate_item_menu(self, menu, item)
+        populate_item_menu(self, menu, items)
         position = context_menu_position(self.result_list, event, self.result_list.GetFirstSelected())
         self.result_list.PopupMenu(menu, position)
         menu.Destroy()
@@ -412,16 +527,23 @@ class SearchPanel(wx.Panel):
         self._load_into_results(f"Podcast: {name}", lambda sp: load_show_episodes(sp, show_id, name))
 
     def _load_into_results(self, title: str, fetch):
-        """Lädt Inhalte im Hintergrund in die Ergebnisliste (mit Verlauf für Rücktaste).
+        """Öffnet eine Ansicht in der Ergebnisliste (mit Verlauf für Rücktaste)."""
+        self._load_view(title, fetch, remember=True)
+
+    def _load_view(self, title: str, fetch, remember: bool):
+        """Lädt Inhalte im Hintergrund in die Ergebnisliste.
 
         ``fetch(sp)`` läuft vollständig im Worker-Thread und liefert fertige
-        Zeilen – im Hauptthread wird nur noch angezeigt.
+        Zeilen – im Hauptthread wird nur noch angezeigt. ``remember`` legt den
+        bisherigen Stand auf den Verlaufsstapel (beim Neuladen unerwünscht).
         """
         sp = client.get()
         if not sp:
             wx.MessageBox("Zuerst autorisieren!", "Fehler", wx.ICON_ERROR)
             return
-        self._nav_stack.append(self._snapshot())
+        if remember:
+            self._nav_stack.append(self._snapshot())
+        self._current_fetch = (title, fetch)
         self.btn_search.Enable(False)
         self.btn_more.Enable(False)
         announce(self, f"Lade {title} …", verbose=True)
