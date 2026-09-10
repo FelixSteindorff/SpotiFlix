@@ -737,6 +737,79 @@ class SpotifyClient:
         getattr(sp, endpoints[1] if saved else endpoints[2])([item_id])
         return True
 
+    def playlist_details(self, playlist_id: str) -> dict:
+        """Liefert Name, Beschreibung und Besitzverhältnisse einer Playlist."""
+        sp = self.get()
+        if not sp:
+            raise RuntimeError("Zuerst autorisieren!")
+        data = sp.playlist(
+            playlist_id,
+            fields="id,name,description,collaborative,snapshot_id,owner(id,display_name)",
+        ) or {}
+        owner = data.get("owner") or {}
+        return {
+            "id": data.get("id", playlist_id),
+            "name": data.get("name", ""),
+            "description": data.get("description", "") or "",
+            "collaborative": bool(data.get("collaborative")),
+            "snapshot_id": data.get("snapshot_id", ""),
+            "owner_id": owner.get("id", ""),
+            "owner_name": owner.get("display_name", ""),
+        }
+
+    def playlist_is_editable(self, playlist_id: str) -> bool:
+        """Prüft, ob der angemeldete Nutzer diese Playlist ändern darf."""
+        details = self.playlist_details(playlist_id)
+        me = self._current_user_id()
+        return bool(details["collaborative"] or (me and details["owner_id"] == me))
+
+    def update_playlist_details(
+        self, playlist_id: str, name: str | None = None, description: str | None = None
+    ) -> bool:
+        """Ändert Name und/oder Beschreibung einer Playlist."""
+        sp = self.get()
+        if not sp:
+            raise RuntimeError("Zuerst autorisieren!")
+        kwargs = {}
+        if name is not None:
+            name = name.strip()
+            if not name:
+                raise ValueError("Der Name der Playlist darf nicht leer sein.")
+            kwargs["name"] = name
+        if description is not None:
+            kwargs["description"] = description.strip()
+        if not kwargs:
+            return False
+        sp.playlist_change_details(playlist_id, **kwargs)
+        return True
+
+    def remove_playlist_positions(self, playlist_id: str, entries: list[tuple[str, int]]) -> int:
+        """Entfernt Titel an genau diesen Positionen aus der Playlist.
+
+        Es wird bewusst positionsgenau gelöscht: Steht derselbe Titel mehrfach
+        in der Playlist, verschwindet sonst jedes Vorkommen.
+        """
+        sp = self.get()
+        if not sp:
+            raise RuntimeError("Zuerst autorisieren!")
+        entries = [(uri, position) for uri, position in entries if uri and position is not None]
+        if not entries:
+            return 0
+        snapshot = self.playlist_details(playlist_id).get("snapshot_id") or None
+        items = [{"uri": uri, "positions": [int(position)]} for uri, position in entries]
+        sp.playlist_remove_specific_occurrences_of_items(playlist_id, items, snapshot_id=snapshot)
+        return len(items)
+
+    def reorder_playlist(self, playlist_id: str, position: int, insert_before: int) -> bool:
+        """Verschiebt einen Titel innerhalb der Playlist."""
+        sp = self.get()
+        if not sp:
+            raise RuntimeError("Zuerst autorisieren!")
+        if position == insert_before or position + 1 == insert_before:
+            return False
+        sp.playlist_reorder_items(playlist_id, position, insert_before, range_length=1)
+        return True
+
     def create_playlist(self, name: str, public: bool = False, description: str = "") -> dict:
         """Legt eine neue Playlist im Konto des Nutzers an."""
         sp = self.get()

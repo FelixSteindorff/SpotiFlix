@@ -6,14 +6,17 @@ import time
 
 import wx
 
+import applog
 import config as cfg
 import nvda
+from download_manager import STATUS_DONE, STATUS_FAILED, downloads
 from spotify_client import client
 from ui.config_dialog import ConfigurationDialog
 from ui.library_panel import LibraryPanel
 from ui.search_panel import SearchPanel
 from ui.queue_panel import QueuePanel
 from ui.discover_panel import DiscoverPanel
+from ui.downloads_dialog import show_downloads
 from ui.panel_helpers import call_after, format_position, mark_shutting_down, open_folder
 
 APP_NAME = "SpotiFlix"
@@ -80,9 +83,9 @@ class MainWindow(wx.Frame):
     def __init__(self):
         super().__init__(None, title=APP_NAME, size=(800, 600))
 
-        # Aktive Downloads für die nicht-blockierende Fortschrittsanzeige.
-        self._downloads: dict[int, dict] = {}
-        self._download_seq = 0
+        # Downloads laufen über die gemeinsame Warteschlange; der Rückruf
+        # aktualisiert Statusleiste und Ansagen.
+        downloads.set_listener(self._on_download_event)
         # Einschlaf-Timer: Zeitpunkt, an dem pausiert wird (None = aus).
         self._sleep_deadline: float | None = None
         self._hotkey_ids: list[int] = []
@@ -197,7 +200,7 @@ class MainWindow(wx.Frame):
         )
         extras_menu.AppendSeparator()
         self._item_downloads = extras_menu.Append(
-            wx.ID_ANY, "Laufende Downloads …\tCtrl+Shift+L", "Zeigt laufende Downloads und bricht sie ab"
+            wx.ID_ANY, "Downloads …\tCtrl+Shift+L", "Zeigt die Download-Warteschlange und steuert sie"
         )
         self._item_open_folder = extras_menu.Append(
             wx.ID_ANY, "Download-Ordner öffnen", "Öffnet den konfigurierten Zielordner im Explorer"
@@ -278,6 +281,22 @@ class MainWindow(wx.Frame):
             except Exception:
                 pass
         self._hotkey_ids = []
+
+    def media_shortcuts(self) -> list[tuple[str, str]]:
+        """Liefert die tatsächlich registrierten Medientasten für die Kürzelübersicht."""
+        names = {
+            "play_pause": "Wiedergabe/Pause",
+            "next": "Nächster Titel",
+            "previous": "Vorheriger Titel",
+            "stop": "Wiedergabe pausieren",
+        }
+        keys = list(MEDIA_KEYS)
+        return [
+            (f"Medientaste {names[keys[hotkey_id - _HOTKEY_ID_BASE]]}",
+             names[keys[hotkey_id - _HOTKEY_ID_BASE]])
+            for hotkey_id in self._hotkey_ids
+            if 0 <= hotkey_id - _HOTKEY_ID_BASE < len(keys)
+        ]
 
     def _check_authorization(self):
         """Prüft im Hintergrund, ob das gespeicherte Token alle Rechte hat."""
@@ -527,63 +546,36 @@ class MainWindow(wx.Frame):
         # NVDA spricht die Meldung und zeigt sie auf der Braillezeile an.
         nvda.announce(message, interrupt=interrupt)
 
-    def download_register(self, name: str, cancel_event=None) -> int:
-        """Meldet einen neuen Download an und zeigt ihn in der Statusleiste."""
-        self._download_seq += 1
-        dl_id = self._download_seq
-        self._downloads[dl_id] = {"name": name, "done": 0, "total": 0, "cancel": cancel_event}
-        self._refresh_download_status()
-        return dl_id
-
-    def download_update(self, dl_id: int, done: int, total: int):
-        """Aktualisiert den Fortschritt eines laufenden Downloads."""
-        info = self._downloads.get(dl_id)
-        if not info:
-            return
-        info["done"] = done
-        info["total"] = total
-        self._refresh_download_status()
-
-    def download_unregister(self, dl_id: int):
-        """Entfernt einen abgeschlossenen Download aus der Statusanzeige."""
-        self._downloads.pop(dl_id, None)
-        self._refresh_download_status()
+    def _on_download_event(self, job):
+        """Rückruf der Download-Warteschlange (läuft im Worker-Thread)."""
+        call_after(self._refresh_download_status)
+        if job.status == STATUS_DONE:
+            call_after(self.announce, f"Download abgeschlossen: {job.name}")
+        elif job.status == STATUS_FAILED:
+            call_after(self.announce, f"Download fehlgeschlagen: {job.name} – {job.error}")
 
     def _refresh_download_status(self):
-        """Schreibt den aggregierten Download-Fortschritt in Statusfeld 1."""
-        if not self._downloads:
-            self.SetStatusText("", 1)
+        """Schreibt den Stand der Download-Warteschlange in Statusfeld 1."""
+        active = downloads.active_jobs()
+        if not active:
+            failed = [job for job in downloads.jobs() if job.status == STATUS_FAILED]
+            self.SetStatusText(
+                f"{len(failed)} Download(s) fehlgeschlagen – Strg+Umschalt+L" if failed else "", 1
+            )
             return
-        segments = [self._download_label(info) for info in self._downloads.values()]
-        count = len(self._downloads)
-        prefix = f"{count} Downloads: " if count > 1 else "Download: "
-        self.SetStatusText(prefix + " | ".join(segments), 1)
-
-    def _download_label(self, info: dict) -> str:
-        if info["total"]:
-            return f"{info['name']} ({info['done']}/{info['total']})"
-        return f"{info['name']} (läuft …)"
+        running = [job for job in active if job.status != "wartet"]
+        segments = [job.label() for job in running] or [f"{len(active)} in der Warteschlange"]
+        waiting = len(active) - len(running)
+        text = " | ".join(segments)
+        if waiting:
+            text += f" (+{waiting} wartend)"
+        prefix = "Downloads: " if len(active) > 1 else "Download: "
+        self.SetStatusText(prefix + text, 1)
 
     def _on_show_downloads(self, event):
-        """Zeigt laufende Downloads und erlaubt das Abbrechen."""
-        if not self._downloads:
-            self.announce("Keine laufenden Downloads")
-            return
-        entries = list(self._downloads.items())
-        labels = [self._download_label(info) for _dl_id, info in entries]
-        dialog = wx.MultiChoiceDialog(
-            self, "Downloads zum Abbrechen auswählen:", "Laufende Downloads", labels
-        )
-        if dialog.ShowModal() == wx.ID_OK:
-            cancelled = 0
-            for index in dialog.GetSelections():
-                cancel_event = entries[index][1].get("cancel")
-                if cancel_event is not None:
-                    cancel_event.set()
-                    cancelled += 1
-            if cancelled:
-                self.announce(f"{cancelled} Download(s) werden abgebrochen")
-        dialog.Destroy()
+        """Öffnet die Download-Warteschlange."""
+        show_downloads(self)
+        self._refresh_download_status()
 
     def _on_open_download_folder(self, event):
         target = cfg.get_download_dir()
@@ -734,9 +726,8 @@ class MainWindow(wx.Frame):
         self._sleep_timer.Stop()
         self._unregister_media_keys()
         # Laufende Downloads abbrechen, damit keine halben Dateien entstehen.
-        for info in self._downloads.values():
-            if info.get("cancel") is not None:
-                info["cancel"].set()
+        downloads.set_listener(None)
+        downloads.cancel_all()
         try:
             from librespot_manager import librespot
             librespot.stop()

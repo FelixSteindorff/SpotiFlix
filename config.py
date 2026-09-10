@@ -27,6 +27,14 @@ VERBOSITY_MODES = {
 }
 # Wie viele Suchbegriffe im Verlauf des Suchfelds behalten werden.
 SEARCH_HISTORY_SIZE = 20
+# librespot-Wiedergabe: Lautstärke-Normalisierung und Startlautstärke.
+DEFAULT_VOLUME_NORMALISATION = True
+DEFAULT_INITIAL_VOLUME = 50
+# Wie viele Downloads gleichzeitig laufen dürfen (der Rest wartet in der Schlange).
+DEFAULT_DOWNLOAD_PARALLEL = 2
+MAX_DOWNLOAD_PARALLEL = 4
+# Schnellzugriffe (Strg+Umschalt+1 … 9) auf Playlists, Alben, Künstler, Podcasts.
+MAX_BOOKMARKS = 9
 # Autoplay-Modus: Was passiert, nachdem ein einzelner Titel abgespielt wurde?
 AUTOPLAY_MODES = {
     "off": "Aus (nur der gewählte Titel)",
@@ -227,6 +235,51 @@ def add_search_history(query: str) -> bool:
     return _save_settings(settings)
 
 
+def get_volume_normalisation() -> bool:
+    """Gibt an, ob librespot die Lautstärke normalisieren soll."""
+    value = _load_settings().get("volume_normalisation", DEFAULT_VOLUME_NORMALISATION)
+    return bool(value)
+
+
+def get_initial_volume() -> int:
+    """Gibt die Startlautstärke des lokalen Players in Prozent zurück."""
+    try:
+        value = int(_load_settings().get("initial_volume", DEFAULT_INITIAL_VOLUME))
+    except (TypeError, ValueError):
+        return DEFAULT_INITIAL_VOLUME
+    return max(0, min(100, value))
+
+
+def get_download_parallel() -> int:
+    """Gibt zurück, wie viele Downloads gleichzeitig laufen dürfen."""
+    try:
+        value = int(_load_settings().get("download_parallel", DEFAULT_DOWNLOAD_PARALLEL))
+    except (TypeError, ValueError):
+        return DEFAULT_DOWNLOAD_PARALLEL
+    return max(1, min(MAX_DOWNLOAD_PARALLEL, value))
+
+
+def get_bookmarks() -> list[dict]:
+    """Gibt die gespeicherten Schnellzugriffe zurück (Reihenfolge = Tastennummer)."""
+    value = _load_settings().get("bookmarks", [])
+    if not isinstance(value, list):
+        return []
+    return [
+        entry for entry in value
+        if isinstance(entry, dict) and entry.get("id") and entry.get("type")
+    ][:MAX_BOOKMARKS]
+
+
+def save_bookmarks(bookmarks: list[dict]) -> bool:
+    """Speichert die Schnellzugriffe (höchstens ``MAX_BOOKMARKS`` Stück)."""
+    settings = _load_settings()
+    settings["bookmarks"] = [
+        {"type": entry.get("type", ""), "id": entry.get("id", ""), "name": entry.get("name", "")}
+        for entry in bookmarks[:MAX_BOOKMARKS]
+    ]
+    return _save_settings(settings)
+
+
 def get_autoplay() -> str:
     """Gibt den Autoplay-Modus zurück ('off', 'context' oder 'all')."""
     value = str(_load_settings().get("autoplay", DEFAULT_AUTOPLAY))
@@ -241,6 +294,9 @@ def save_player_settings(
     download_format: str = DEFAULT_DOWNLOAD_FORMAT,
     autoplay: str = DEFAULT_AUTOPLAY,
     verbosity: str = DEFAULT_VERBOSITY,
+    volume_normalisation: bool = DEFAULT_VOLUME_NORMALISATION,
+    initial_volume: int = DEFAULT_INITIAL_VOLUME,
+    download_parallel: int = DEFAULT_DOWNLOAD_PARALLEL,
 ) -> bool:
     """Speichert Wiedergabe- und Download-Einstellungen."""
     settings = _load_settings()
@@ -251,4 +307,7 @@ def save_player_settings(
     settings["download_format"] = download_format if download_format in DOWNLOAD_FORMATS else DEFAULT_DOWNLOAD_FORMAT
     settings["autoplay"] = autoplay if autoplay in AUTOPLAY_MODES else DEFAULT_AUTOPLAY
     settings["verbosity"] = verbosity if verbosity in VERBOSITY_MODES else DEFAULT_VERBOSITY
+    settings["volume_normalisation"] = bool(volume_normalisation)
+    settings["initial_volume"] = max(0, min(100, int(initial_volume)))
+    settings["download_parallel"] = max(1, min(MAX_DOWNLOAD_PARALLEL, int(download_parallel)))
     return _save_settings(settings)

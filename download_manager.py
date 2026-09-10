@@ -2,10 +2,13 @@
 Optionaler Download-Hook über spotdl.
 """
 import os
+import queue
+import re
 import shutil
 import subprocess
-import re
+import threading
 
+import applog
 import config as cfg
 
 # Unter Windows verhindert CREATE_NO_WINDOW, dass für jeden Aufruf kurz ein
@@ -55,6 +58,192 @@ def _spotdl_output_template(output_dir: str) -> str:
 
 class DownloadCancelled(Exception):
     """Wird ausgelöst, wenn der Nutzer einen laufenden Download abbricht."""
+
+
+# Zustände eines Auftrags in der Warteschlange.
+STATUS_WAITING = "wartet"
+STATUS_RUNNING = "läuft"
+STATUS_DONE = "fertig"
+STATUS_FAILED = "fehlgeschlagen"
+STATUS_CANCELLED = "abgebrochen"
+#: Zustände, aus denen heraus ein erneuter Versuch sinnvoll ist.
+RETRYABLE = (STATUS_FAILED, STATUS_CANCELLED)
+
+
+class DownloadJob:
+    """Ein Auftrag in der Download-Warteschlange."""
+
+    def __init__(self, job_id: int, item: dict, name: str):
+        self.id = job_id
+        self.item = item
+        self.name = name
+        self.status = STATUS_WAITING
+        self.done = 0
+        self.total = 0
+        self.error: Exception | None = None
+        self.cancel_event = threading.Event()
+
+    @property
+    def finished(self) -> bool:
+        return self.status in (STATUS_DONE, STATUS_FAILED, STATUS_CANCELLED)
+
+    def label(self) -> str:
+        """Kurzbeschreibung für Statusleiste und Dialog."""
+        if self.status == STATUS_RUNNING and self.total:
+            return f"{self.name} ({self.done}/{self.total})"
+        if self.status == STATUS_RUNNING:
+            return f"{self.name} (läuft …)"
+        if self.status == STATUS_FAILED:
+            return f"{self.name} (fehlgeschlagen: {self.error})"
+        return f"{self.name} ({self.status})"
+
+
+class DownloadQueue:
+    """Arbeitet Downloads mit begrenzter Parallelität ab.
+
+    Ohne Warteschlange startet jeder Menübefehl sofort einen eigenen Thread –
+    fünf Alben bedeuten dann fünf gleichzeitige Streams. Hier laufen nur so
+    viele Aufträge gleichzeitig, wie in den Einstellungen erlaubt sind; der
+    Rest wartet. Fehlgeschlagene Aufträge bleiben in der Liste und lassen sich
+    erneut anstoßen.
+    """
+
+    def __init__(self):
+        self._jobs: dict[int, DownloadJob] = {}
+        self._order: list[int] = []
+        self._pending: queue.Queue = queue.Queue()
+        self._lock = threading.Lock()
+        self._workers: list[threading.Thread] = []
+        self._listener = None
+
+    def set_listener(self, callback):
+        """Setzt den Rückruf, der bei jeder Zustandsänderung feuert."""
+        self._listener = callback
+
+    def _notify(self, job: DownloadJob):
+        if self._listener:
+            try:
+                self._listener(job)
+            except Exception:
+                pass
+
+    def submit(self, item: dict, name: str | None = None) -> DownloadJob:
+        """Reiht ein Element zum Herunterladen ein."""
+        with self._lock:
+            job_id = len(self._order) + 1
+            job = DownloadJob(job_id, item, name or item.get("name") or "Auswahl")
+            self._jobs[job_id] = job
+            self._order.append(job_id)
+        self._pending.put(job_id)
+        self._ensure_workers()
+        self._notify(job)
+        return job
+
+    def _ensure_workers(self):
+        """Startet bei Bedarf weitere Arbeiter (bis zum eingestellten Maximum)."""
+        wanted = cfg.get_download_parallel()
+        with self._lock:
+            alive = [worker for worker in self._workers if worker.is_alive()]
+            self._workers = alive
+            missing = wanted - len(alive)
+            for _ in range(max(0, missing)):
+                worker = threading.Thread(target=self._worker_loop, daemon=True)
+                self._workers.append(worker)
+                worker.start()
+
+    def _worker_loop(self):
+        while True:
+            job_id = self._pending.get()
+            job = self._jobs.get(job_id)
+            if job is None or job.cancel_event.is_set():
+                if job is not None:
+                    job.status = STATUS_CANCELLED
+                    self._notify(job)
+                continue
+            self._run_job(job)
+
+    def _run_job(self, job: DownloadJob):
+        job.status = STATUS_RUNNING
+        job.error = None
+        self._notify(job)
+
+        def progress(done: int, total: int):
+            job.done, job.total = done, total
+            self._notify(job)
+
+        try:
+            download_item(
+                job.item,
+                cfg.get_download_dir(),
+                progress_callback=progress,
+                cancel_event=job.cancel_event,
+            )
+            job.status = STATUS_DONE
+            applog.info("Download", f"{job.name} abgeschlossen")
+        except DownloadCancelled as e:
+            job.status = STATUS_CANCELLED
+            job.error = e
+            applog.info("Download", f"{job.name} abgebrochen: {e}")
+        except Exception as e:
+            job.status = STATUS_FAILED
+            job.error = e
+            applog.error("Download", f"{job.name}: {e}")
+        self._notify(job)
+
+    # -- Abfragen und Steuern ------------------------------------------------
+
+    def jobs(self) -> list[DownloadJob]:
+        """Alle Aufträge in Einreihungsreihenfolge."""
+        with self._lock:
+            return [self._jobs[job_id] for job_id in self._order if job_id in self._jobs]
+
+    def active_jobs(self) -> list[DownloadJob]:
+        """Aufträge, die laufen oder noch warten."""
+        return [job for job in self.jobs() if not job.finished]
+
+    def cancel(self, job_id: int) -> bool:
+        job = self._jobs.get(job_id)
+        if not job or job.finished:
+            return False
+        job.cancel_event.set()
+        if job.status == STATUS_WAITING:
+            # Wartende Aufträge sofort als abgebrochen melden.
+            job.status = STATUS_CANCELLED
+            self._notify(job)
+        return True
+
+    def cancel_all(self) -> int:
+        return sum(1 for job in self.active_jobs() if self.cancel(job.id))
+
+    def retry_failed(self) -> int:
+        """Reiht fehlgeschlagene und abgebrochene Aufträge erneut ein."""
+        retried = 0
+        for job in self.jobs():
+            if job.status not in RETRYABLE:
+                continue
+            job.cancel_event = threading.Event()
+            job.status = STATUS_WAITING
+            job.done = job.total = 0
+            job.error = None
+            self._pending.put(job.id)
+            retried += 1
+            self._notify(job)
+        if retried:
+            self._ensure_workers()
+        return retried
+
+    def clear_finished(self) -> int:
+        """Entfernt abgeschlossene Aufträge aus der Liste."""
+        with self._lock:
+            finished = [job_id for job_id in self._order if self._jobs[job_id].finished]
+            for job_id in finished:
+                del self._jobs[job_id]
+            self._order = [job_id for job_id in self._order if job_id in self._jobs]
+        return len(finished)
+
+
+#: Modul-weite Warteschlange – alle Downloads laufen hierüber.
+downloads = DownloadQueue()
 
 
 def download_item(item: dict, output_dir: str | None = None, progress_callback=None, cancel_event=None) -> str:

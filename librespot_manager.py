@@ -103,8 +103,12 @@ class LibrespotManager:
                 "--cache", LIBRESPOT_CACHE_DIR,
                 "--access-token", token,
                 "--bitrate", cfg.get_playback_quality(),
+                "--initial-volume", str(cfg.get_initial_volume()),
                 "--disable-audio-cache",
             ]
+            if cfg.get_volume_normalisation():
+                # Gleicht Lautstärkeunterschiede zwischen Alben aus.
+                cmd.append("--enable-volume-normalisation")
 
             # Unter Windows verhindert CREATE_NO_WINDOW das separate
             # Konsolenfenster von librespot (Konsolen-Anwendung).

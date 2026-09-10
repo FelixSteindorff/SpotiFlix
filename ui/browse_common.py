@@ -53,6 +53,9 @@ def track_row(track: dict, context_uri: str | None = None) -> dict:
         "artist_name": first_artist.get("name", ""),
         "album_id": album_obj.get("id"),
         "album_name": album,
+        # Für die Sortierung nach Dauer bzw. Datum.
+        "duration_ms": track.get("duration_ms") or 0,
+        "sort_date": album_obj.get("release_date", ""),
     }
     if context_uri:
         row["context_uri"] = context_uri
@@ -92,14 +95,16 @@ def artist_row(artist: dict) -> dict:
 
 def playlist_row(playlist: dict) -> dict:
     """Baut eine einheitliche Playlistzeile."""
-    owner = (playlist.get("owner") or {}).get("display_name", "")
+    owner = playlist.get("owner") or {}
     return {
         "type": "playlist",
         "id": playlist.get("id"),
         "uri": playlist.get("uri"),
         "external_urls": playlist.get("external_urls"),
         "name": playlist.get("name", ""),
-        "details": owner,
+        "details": owner.get("display_name", ""),
+        "owner_id": owner.get("id", ""),
+        "collaborative": bool(playlist.get("collaborative")),
     }
 
 
@@ -151,6 +156,8 @@ def episode_row(episode: dict, show_name: str = "") -> dict:
         "show_id": show.get("id"),
         "show_name": name_of_show,
         "resume_ms": resume_ms,
+        "duration_ms": episode.get("duration_ms") or 0,
+        "sort_date": episode.get("release_date", ""),
     }
 
 
@@ -250,8 +257,14 @@ def load_playlist_tracks(sp, playlist_id: str) -> list[dict]:
         limit=100,
     )
     context_uri = f"spotify:playlist:{playlist_id}"
-    return [
-        track_row(item["track"], context_uri=context_uri)
-        for item in collect_page_items(sp, results)
-        if item.get("track")
-    ]
+    rows = []
+    # Die Position ist die Nummer in der Playlist – sie bleibt auch dann
+    # richtig, wenn die Anzeige gefiltert oder umsortiert wird.
+    for position, item in enumerate(collect_page_items(sp, results)):
+        track = (item or {}).get("track")
+        if not track:
+            continue
+        row = track_row(track, context_uri=context_uri)
+        row["playlist_position"] = position
+        rows.append(row)
+    return rows

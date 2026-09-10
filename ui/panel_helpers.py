@@ -17,9 +17,20 @@ import threading
 
 import wx
 
+import applog
 import config as cfg
-from download_manager import DownloadCancelled, download_item
+from download_manager import downloads
 from spotify_client import client
+
+#: Sortiermodi für alle Listenansichten (Schlüssel, Beschriftung).
+SORT_MODES = [
+    ("default", "Standard (wie geladen)"),
+    ("name", "Name A–Z"),
+    ("artist", "Künstler A–Z"),
+    ("album", "Album A–Z"),
+    ("duration", "Dauer (kurz zuerst)"),
+    ("date", "Datum (neueste zuerst)"),
+]
 
 # Wird beim Schließen des Hauptfensters gesetzt. Hintergrund-Threads (Downloads,
 # Wiedergabe, Now-Playing) laufen als Daemons weiter und würden sonst
@@ -108,6 +119,48 @@ def context_menu_position(list_ctrl: wx.ListCtrl, event, index: int | None = Non
         except Exception:
             pass
     return wx.Point(0, 0)
+
+
+def sort_rows(rows: list[dict], mode: str) -> list[dict]:
+    """Sortiert Zeilen nach dem gewählten Modus (stabil, fehlende Felder egal)."""
+    if mode == "name":
+        return sorted(rows, key=lambda row: row.get("name", "").casefold())
+    if mode == "artist":
+        return sorted(rows, key=lambda row: (row.get("artist_name", "").casefold(),
+                                             row.get("name", "").casefold()))
+    if mode == "album":
+        return sorted(rows, key=lambda row: (row.get("album_name", "").casefold(),
+                                             row.get("name", "").casefold()))
+    if mode == "duration":
+        return sorted(rows, key=lambda row: row.get("duration_ms") or 0)
+    if mode == "date":
+        return sorted(rows, key=lambda row: row.get("sort_date", ""), reverse=True)
+    return list(rows)
+
+
+def selected_indices(list_ctrl: wx.ListCtrl) -> list[int]:
+    """Liefert alle markierten Zeilennummern einer Liste."""
+    indices = []
+    index = list_ctrl.GetFirstSelected()
+    while index != wx.NOT_FOUND:
+        indices.append(index)
+        index = list_ctrl.GetNextSelected(index)
+    return indices
+
+
+def selected_rows(list_ctrl: wx.ListCtrl, rows: list[dict]) -> list[dict]:
+    """Liefert die markierten Zeilen (in Anzeigereihenfolge)."""
+    return [rows[index] for index in selected_indices(list_ctrl) if index < len(rows)]
+
+
+def select_only(list_ctrl: wx.ListCtrl, index: int):
+    """Markiert genau eine Zeile – vorhandene Mehrfachauswahl wird aufgehoben."""
+    for other in selected_indices(list_ctrl):
+        list_ctrl.SetItemState(other, 0, wx.LIST_STATE_SELECTED)
+    if 0 <= index < list_ctrl.GetItemCount():
+        list_ctrl.Select(index)
+        list_ctrl.Focus(index)
+        list_ctrl.EnsureVisible(index)
 
 
 def filter_rows(rows: list[dict], needle: str) -> list[dict]:
@@ -271,48 +324,22 @@ def collect_page_items(sp, page: dict | None) -> list:
     return items
 
 
-def start_download(parent: wx.Window, item: dict):
-    """Startet einen Download im Hintergrund.
+def start_download(parent: wx.Window, items):
+    """Reiht ein Element (oder mehrere) in die Download-Warteschlange ein.
 
-    Der Fortschritt erscheint in der Statusleiste, statt die UI mit einem modalen
-    Dialog zu blockieren – so kann während des Downloads weiter gebrowst werden.
+    Die Warteschlange arbeitet nur so viele Aufträge gleichzeitig ab, wie in
+    den Einstellungen erlaubt sind; Fortschritt, Abschluss und Fehler meldet
+    das Hauptfenster über den Rückruf der Warteschlange.
     """
-    frame = parent.GetTopLevelParent()
-    name = item.get("name") or "Auswahl"
-
-    register = getattr(frame, "download_register", None)
-    update = getattr(frame, "download_update", None)
-    unregister = getattr(frame, "download_unregister", None)
-    # Über das Event kann das Hauptfenster den Download abbrechen.
-    cancel_event = threading.Event()
-    dl_id = register(name, cancel_event) if register else None
-
-    def progress(done: int, total: int):
-        if dl_id is not None and update:
-            call_after(update, dl_id, done, total)
-
-    def finish(error: Exception | None):
-        if dl_id is not None and unregister:
-            unregister(dl_id)
-        if isinstance(error, DownloadCancelled):
-            announce(parent, f"Download abgebrochen: {name} – {error}")
-        elif error:
-            announce(parent, f"Download fehlgeschlagen: {name}")
-            wx.MessageBox(str(error), "Download-Fehler", wx.ICON_ERROR)
-        else:
-            announce(parent, f"Download abgeschlossen: {name}")
-
-    def worker():
-        try:
-            download_item(
-                item,
-                cfg.get_download_dir(),
-                progress_callback=progress,
-                cancel_event=cancel_event,
-            )
-            call_after(finish, None)
-        except Exception as e:
-            call_after(finish, e)
-
-    announce(parent, f"Download gestartet: {name}")
-    threading.Thread(target=worker, daemon=True).start()
+    if isinstance(items, dict):
+        items = [items]
+    items = [item for item in items if item]
+    if not items:
+        return
+    for item in items:
+        downloads.submit(item)
+    if len(items) == 1:
+        announce(parent, f"Download eingereiht: {items[0].get('name') or 'Auswahl'}")
+    else:
+        announce(parent, f"{len(items)} Downloads eingereiht")
+    applog.info("Download", f"{len(items)} Auftrag/Aufträge eingereiht")
