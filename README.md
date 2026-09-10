@@ -61,7 +61,27 @@ Optional, for downloads:
 
 ## Installation
 
-There are no prebuilt downloads yet, so either run SpotiFlix from source or build the Windows version yourself.
+### Windows
+
+There are two downloads on the [Releases page](https://github.com/FelixSteindorff/SpotiFlix/releases).
+
+**Installer**
+
+```text
+SpotiFlix-<version>-Setup.exe
+```
+
+The installer does not need administrator rights. It installs into your user profile, adds SpotiFlix to the Start menu and creates an uninstall entry.
+
+**Portable**
+
+```text
+SpotiFlix-<version>-portable-win64.zip
+```
+
+Unpack it anywhere and run `SpotiFlix.exe`. Keep the whole `SpotiFlix` folder together – the dependencies live next to the executable in `_internal`.
+
+Both downloads include librespot for local playback, the NVDA controller DLLs and the translation catalogs. Your settings, tokens and downloads always stay in your user profile (see [Data locations](#data-locations)), so a portable copy on another computer will ask you to authorize again.
 
 ### Spotify API credentials
 
@@ -251,12 +271,29 @@ Another language needs a folder `locale/<code>/LC_MESSAGES/`, an entry in
 
 ## Building the Windows version
 
+For a plain application build:
+
 ```powershell
 py -m pip install pyinstaller
 py -m PyInstaller --noconfirm --clean SpotiFlix.spec
 ```
 
 The result is a one-dir build in `dist\SpotiFlix\`. Pass the whole folder on when sharing it, not just the executable.
+
+For a full release – portable archive and installer – use:
+
+```powershell
+py build_release.py
+```
+
+That compiles the translation catalogs, runs PyInstaller, packs `dist\SpotiFlix` into `SpotiFlix-<version>-portable-win64.zip`, builds the installer with [Inno Setup](https://jrsoftware.org/isinfo.php) and prints the SHA-256 of both files. Useful variants:
+
+```powershell
+py build_release.py --skip-installer   # only the portable archive
+py build_release.py --skip-build       # only repackage what is in dist
+```
+
+Inno Setup is optional; without it you get the portable archive and a note why the installer is missing (`winget install JRSoftware.InnoSetup`). The version number lives in `version.py` and feeds the About dialog, the file names and the installer at once.
 
 Always build from `SpotiFlix.spec`. It produces a windowless build and bundles `librespot.exe`, the NVDA controller DLLs and the `locale` folder, which `nvda.py`, `librespot_manager.py` and `i18n.py` look for in exactly that place. Run `py tools/i18n_tool.py compile` before building if you changed a catalog. No SpotiFlix instance may be running, or the executable is locked.
 
@@ -274,6 +311,7 @@ download_manager.py     download methods and the queue
 nvda.py                 speech and braille output
 applog.py               log and short error messages
 i18n.py                 translations (German source, English catalog)
+version.py              the version number, used everywhere
 
 ui/
   main_window.py        menu, tabs, playback control, timers
@@ -297,6 +335,8 @@ locale/
   en/LC_MESSAGES/       English catalog (.po and compiled .mo)
 
 tools/i18n_tool.py      extract, merge, compile and check catalogs
+packaging/spotiflix.iss Inno Setup installer
+build_release.py        portable archive and installer
 SpotiFlix.spec          Windows build
 ```
 

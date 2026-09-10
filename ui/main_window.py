@@ -9,6 +9,7 @@ import wx
 import applog
 import config as cfg
 import nvda
+from version import VERSION
 from download_manager import STATUS_DONE, STATUS_FAILED, downloads
 from spotify_client import client
 from ui.config_dialog import ConfigurationDialog
@@ -943,7 +944,7 @@ class MainWindow(wx.Frame):
     def _on_about(self, event):
         about = wx.AboutDialogInfo()
         about.Name = APP_NAME
-        about.Version = "1.1"
+        about.Version = VERSION
         about.Description = (
             _("Ein barrierefreier wxPython-Player für Spotify\nSprachausgabe: {output_name}").format(output_name=nvda.output_name())
         )
